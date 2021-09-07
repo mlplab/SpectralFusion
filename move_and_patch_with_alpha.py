@@ -24,14 +24,16 @@ args = parser.parse_args()
 
 data_name = args.dataset
 data_path = f'../SCI_dataset/{data_name}'
-save_path = f'../SCI_dataset/My_{data_name}_{patch_size}'
+save_path = f'../SCI_dataset/HiNAS_{data_name}_{patch_size}'
 
 
 train_data_path = os.path.join(save_path, 'train_data')
+alpha_data_path = os.path.join(save_path, 'alpha_data')
 test_data_path = os.path.join(save_path, 'test_data')
 
 
 train_patch_path = os.path.join(save_path, 'train_patch_data')
+alpha_patch_path = os.path.join(save_path, 'alpha_patch_data')
 test_patch_path = os.path.join(save_path, 'test_patch_data')
 eval_path = os.path.join(save_path, 'eval_data')
 eval_show_path = os.path.join(save_path, 'eval_show_data')
@@ -71,14 +73,18 @@ np.random.seed(seed_key[data_name])
 train_test_idx = {'CAVE': np.array([1] * 20 + [2] * 12),
                   'Harvard': np.array([1] * 40 + [2] * 10),
                   'ICVL': np.random.choice((1, 2), data_list.shape[0], p=(.8, .2))}
-train_list = list(data_list[train_test_idx[data_name] == 1])
+train_all_list = list(data_list[train_test_idx[data_name] == 1])
+train_list = train_all_list[:len(train_all_list) // 2]
+alpha_list = train_all_list[len(train_all_list) // 2:]
 test_list = list(data_list[train_test_idx[data_name] == 2])
-print(len(train_list), len(test_list))
+print(len(train_list), len(alpha_list), len(test_list))
 move_data(data_path, train_list, train_data_path)
+move_data(data_path, alpha_list, alpha_data_path)
 move_data(data_path, test_list, test_data_path)
 
 
 make_patch(train_data_path, train_patch_path, size=patch_size,step=patch_step, ch=31, data_key=data_key[data_name])
+make_patch(alpha_data_path, alpha_patch_path, size=patch_size,step=patch_step, ch=31, data_key=data_key[data_name])
 make_patch(test_data_path, test_patch_path, size=patch_size, step=patch_step, ch=31, data_key=data_key[data_name])
 make_patch(test_data_path, eval_path, size=show_size, step=show_step, ch=31, data_key=data_key[data_name])
 make_patch(test_data_path, eval_show_path, size=show_size, step=show_step, ch=31, data_key=data_key[data_name])

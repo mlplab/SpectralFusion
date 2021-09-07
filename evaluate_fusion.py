@@ -14,8 +14,8 @@ from trainer import Trainer
 from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
-from model.layers import MSE_SAMLoss
-from data_loader import PatchMaskDataset, PatchEvalDataset
+from model.SubReconModel import SpectralFusion
+from data_loader import PatchMaskDataset, PatchEvalDataset, SpectralFusionEvalDataset
 from evaluate import PSNRMetrics, SAMMetrics, RMSEMetrics
 from evaluate import ReconstEvaluater
 from pytorch_ssim import SSIM
@@ -55,28 +55,33 @@ loss_mode = args.loss
 device = 'cpu'
 
 
-img_path = f'../SCI_dataset/My_{data_name}_128'
+mode = {'both': [True, True, 'fusion', 3, 3], 
+        'inputOnly': [False, True, 'fusion', 0, 3], 
+        'outputOnly': [True, False, 'mse', 3, 0]}
+img_path = f'../SCI_dataset/My_{data_name}'
 test_path = os.path.join(img_path, 'eval_data')
 mask_path  = os.path.join(img_path, 'eval_mask_data')
 sota_path = os.path.join('../SCI_ckpt', f'{data_name}_SOTA')
 ckpt_path = os.path.join('../SCI_ckpt', f'{data_name}_{dt_now}')
-all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained_sota')
+all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
+loss_mode = mode[output_mode][2]
+input_rgb, output_rgb = mode[output_mode][3:]
 
-model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': DeepSSPrior}
-activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu'}
 
-
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}'
+# if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
+#     print(f'already trained {save_model_name}')
+#     sys.exit(0)
 
 
 model_names = os.listdir(sota_path)
 model_names = [name.split('.')[0] for name in model_names]
 
 
-output_path = os.path.join('../SCI_result/', f'{data_name}_sota_{dt_now}', save_model_name)
+output_path = os.path.join('../SCI_result/', f'{data_name}_{dt_now}', save_model_name)
 output_img_path = os.path.join(output_path, 'output_img')
 output_mat_path = os.path.join(output_path, 'output_mat')
 output_csv_path = os.path.join(output_path, f'output.csv')
@@ -90,19 +95,24 @@ if os.path.exists(output_csv_path):
     sys.exit(0)
 
 
-test_dataset = PatchEvalDataset(test_path, mask_path, transform=None, concat=concat_flag)
+test_dataset = SpectralFusionEvalDataset(test_path, mask_path,
+                                     transform=None, concat=concat_flag,
+                                     data_name=data_name, rgb_input=mode[output_mode][0],
+                                     rgb_label=mode[output_mode][1])
 
 
-model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
-                              layer_num=block_num, activation=activations[model_name])
+model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch, 
+                       output_rgb_ch=output_rgb, output_hsi_ch=31, 
+                       rgb_feature=31, hsi_feature=31, fusion_feature=31,
+                       layer_num=block_num).to(device)
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
                   map_location=torch.device('cpu'))
 model.load_state_dict(ckpt['model_state_dict'])
 
+
 model.to(device)
-print(next(model.parameters()).is_cuda)
 # summary(model, (1, input_ch, 48, 48), depth=8)
 psnr = PSNRMetrics().to(device).eval()
 ssim = SSIM().to(device).eval()

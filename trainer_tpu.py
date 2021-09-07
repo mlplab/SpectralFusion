@@ -85,13 +85,24 @@ class TPUTrainer(Trainer):
 
     def _step(self, inputs: torch.Tensor, labels: torch.Tensor,
               train: bool=True) -> (torch.Tensor, torch.Tensor):
-        output = self.model(inputs)
+        if isinstance(inputs, (list, tuple)):
+            output = self.model(*inputs)
+        elif isinstance(inputs, (dict)):
+            output = self.model(**inputs)
+        else:
+            output = self.model(inputs)
+        if isinstance(labels, dict) and isinstance(output, torch.Tensor):
+            labels = labels['hsi']
         loss = self.criterion(output, labels)
         if train is True:
             loss.backward()
             xm.optimizer_step(self.optimizer, barrier=True)
             self.optimizer.zero_grad()
-        return loss, output
+        if isinstance(output, (list, tuple)):
+            hsi = output[-1]
+        else:
+            hsi = output
+        return loss, hsi
 
     def _multi_all_step(self, dataloader, flush_time: int, mode: str,
                         desc_str: str) -> (list, list):
