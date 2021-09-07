@@ -137,7 +137,6 @@ class Evaluater(object):
         return self
 
     def _save_csv(self, output_evaluate: list, header: list) -> None:
-        header.append('Time')
         output_evaluate_np = np.array(output_evaluate, dtype=np.float32)
         means = list(np.mean(output_evaluate_np, axis=0))
         output_evaluate.append(means)
@@ -170,15 +169,29 @@ class ReconstEvaluater(Evaluater):
             with tqdm(dataset, ncols=columns, ascii=True) as pbar:
                 for i, (idx, inputs, labels) in enumerate(pbar):
                     evaluate_list = []
-                    inputs = inputs.unsqueeze(0).to(device)
-                    labels = labels.unsqueeze(0).to(device)
-                    output = model(inputs)
+                    inputs = self._trans_data(inputs)
+                    labels = self._trans_data(labels)
+                    if isinstance(inputs, (list, tuple)):
+                        output = model(*inputs)
+                    elif isinstance(inputs, (dict)):
+                        output = model(**inputs)
+                    else:
+                        output = model(inputs)
+                    if isinstance(output, (list, tuple)):
+                        output = output[-1]
+                    if isinstance(inputs, (list, tuple)):
+                        inputs = inputs[0]
+                    elif isinstance(inputs, (dict)):
+                        inputs = inputs['hsi']
+                    if isinstance(labels, (list, tuple)):
+                        labels = labels[-1]
+                    elif isinstance(labels, (dict)):
+                        labels = labels['hsi']
                     metrics_output = torch.clamp(output, min=0., max=1.)
                     metrics_labels = torch.clamp(labels, min=0., max=1.)
                     for metrics_func in evaluate_fn:
                         metrics = metrics_func(metrics_output, metrics_labels)
                         evaluate_list.append(f'{metrics.item():.7f}')
-                    evaluate_list.append(f'{finish_time:.5f}')
                     output_evaluate.append(evaluate_list)
                     show_evaluate = np.mean(np.array(output_evaluate, dtype=np.float32), axis=0)
                     self._step_show(pbar, Metrics=show_evaluate)
@@ -187,3 +200,12 @@ class ReconstEvaluater(Evaluater):
                     self._save_mat(i, idx, output)
         self._save_csv(output_evaluate, header)
         return self
+
+    def _trans_data(self, data: torch.Tensor) -> torch.Tensor:
+        if isinstance(data, (list, tuple)):
+            data = [x.unsqueeze(0).to(device) for x in data]
+        elif isinstance(data, (dict)):
+            return {key: value.unsqueeze(0).to(device) for key, value in data.items()}
+        else:
+            data = data.unsqueeze(0).to(device)
+        return data

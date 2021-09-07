@@ -22,7 +22,7 @@ class Trainer(object):
 
     def __init__(self, model: torch.nn.Module, criterion: torch.nn.Module,
                  optimizer: torch.optim.Optimizer, *args, scheduler=None,
-                 callbacks=None, device: str='cpu', **kwargs):
+                 callbacks=None, device: str='cpu', evaluate_flg: bool=False, **kwargs):
 
         self.model = model
         self.criterion = criterion
@@ -35,6 +35,7 @@ class Trainer(object):
         self.sam = kwargs.get('sam', None_Evaluate())  # SAMMetrics().eval())
         self.ssim = kwargs.get('ssim', None_Evaluate())  # SSIM().eval()
         self.colab_mode = kwargs.get('colab_mode', False)
+        self.evaluate_flg = evaluate_flg
         self.scaler = torch.cuda.amp.GradScaler()
 
     def train(self, epochs: int, train_dataloader: torch.utils.data.DataLoader,
@@ -56,7 +57,7 @@ class Trainer(object):
             train_loss = []
             val_loss = []
             desc_str = f'{mode:>5} Epoch: {epoch + 1:05d} / {epochs:05d}'
-            show_mean = self._all_step(val_dataloader, mode=mode, desc_str=desc_str, columns=columns)
+            show_mean = self._all_step(train_dataloader, mode=mode, desc_str=desc_str, columns=columns)
             train_output.append(show_mean)
 
             self.model.eval()
@@ -78,19 +79,39 @@ class Trainer(object):
         return train_output, val_output
 
     def _trans_data(self, data: torch.Tensor) -> torch.Tensor:
-        return data.to(self.device)
+        if isinstance(data, (list, tuple)):
+            return [x.to(self.device) for x in data]
+        elif isinstance(data, (dict)):
+            return {key: value.to(self.device) for key, value in data.items()}
+        else:
+            return data.to(self.device)
 
     def _step(self, inputs: torch.Tensor, labels: torch.Tensor,
               train: bool=True) -> (torch.Tensor, torch.Tensor):
         with torch.cuda.amp.autocast(self.use_amp):
-            output = self.model(inputs)
+            if isinstance(inputs, (list, tuple)):
+                output = self.model(*inputs)
+            elif isinstance(inputs, (dict)):
+                output = self.model(**inputs)
+            else:
+                output = self.model(inputs)
+            if isinstance(labels, dict) and isinstance(output, torch.Tensor):
+                labels = labels['hsi']
             loss = self.criterion(output, labels)
         if train is True:
-            self.scaler.scale(loss).backward()
-            self.scaler.step(self.optimizer)
-            self.scaler.update()
+            if self.device == 'cuda':
+                self.scaler.scale(loss).backward()
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                loss.backward()
+                self.optimizer.step()
             self.optimizer.zero_grad()
-        return loss, output
+        if isinstance(output, (list, tuple)):
+            hsi = output[-1]
+        else:
+            hsi = output
+        return loss, hsi
 
     def _step_show(self, pbar, *args, **kwargs) -> None:
         if self.device == 'cuda':
@@ -102,10 +123,16 @@ class Trainer(object):
     def _evaluate(self, output: torch.Tensor, label: torch.Tensor) -> (float, float, float):
         output = output.float().to(self.device)
         output = torch.clamp(output, 0., 1.)
-        labels = torch.clamp(label, 0., 1.)
-        return [self.psnr(labels, output).item(),
-                self.ssim(labels, output).item(),
-                self.sam(labels, output).item()]
+        if isinstance(label, (list, tuple)):
+            hsi_label = label[-1]
+        elif isinstance(label, (dict)):
+            hsi_label = label['hsi']
+        else:
+            hsi_label = label
+        label = torch.clamp(hsi_label, 0., 1.)
+        return [self.psnr(label, output).item(),
+                self.ssim(label, output).item(),
+                self.sam(label, output).item()]
 
     def _all_step(self, dataloader, mode: str, desc_str: str, columns: int) -> np.ndarray:
         step_loss = []
@@ -120,9 +147,10 @@ class Trainer(object):
                     with torch.no_grad():
                         loss, output = self._step(inputs, labels, train=False)
                 step_loss.append(loss.item())
-                show_loss = np.mean(val_loss)
+                show_loss = np.mean(step_loss)
                 step_eval.append(self._evaluate(output, labels))
-                show_mean = np.mean(show_val_eval, axis=0)
+                show_mean = np.mean(step_eval, axis=0)
+                # if self.evaluate_flg:
                 evaluate = [f'{show_mean[0]:.7f}', f'{show_mean[1]:.7f}', f'{show_mean[2]:.7f}']
                 self._step_show(pbar, Loss=f'{show_loss:.7f}', Evaluate=evaluate)
                 torch.cuda.empty_cache()

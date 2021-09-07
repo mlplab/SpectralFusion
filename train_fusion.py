@@ -12,12 +12,13 @@ from trainer import Trainer
 from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
-from model.layers import MSE_SAMLoss
-from evaluate import PSNRMetrics, SAMMetrics, RMSEMetrics
-from pytorch_ssim import SSIM
-from data_loader import PatchMaskDataset
+from model.SubReconModel import SpectralFusion
+from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss
+from data_loader import PatchMaskDataset, SpectralFusionDataset
+from evaluate import PSNRMetrics, SAMMetrics
 from utils import RandomCrop, RandomHorizontalFlip, RandomRotation
 from utils import ModelCheckPoint, Draw_Output
+from pytorch_ssim import SSIM
 
 
 parser = argparse.ArgumentParser(description='Train Model')
@@ -54,6 +55,9 @@ if device == 'cuda':
     torch.backends.cudnn.benchmark = True
 
 
+mode = {'both': [True, True, 'fusion', 3, 3], 
+        'inputOnly': [False, True, 'fusion', 0, 3], 
+        'outputOnly': [True, False, 'mse', 3, 0]}
 img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
@@ -64,37 +68,51 @@ callback_result_path = os.path.join('../SCI_result', f'{data_name}_{dt_now}', f'
 os.makedirs(callback_result_path, exist_ok=True)
 filter_path = os.path.join('../SCI_dataset', 'D700_CSF.mat')
 ckpt_path = os.path.join('../SCI_ckpt', f'{data_name}_{dt_now}')
-all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained_sota')
+all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
-model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': DeepSSPrior}
-activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu'}
+loss_mode = mode[output_mode][2]
+input_rgb, output_rgb = mode[output_mode][3:]
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
 
 
 train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
-train_dataset = PatchMaskDataset(train_path, mask_path, transform=train_transform, concat=concat_flag)
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
-
-
 test_transform = None
-test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
-model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
-                              layer_num=block_num, activation=activations[model_name])
+train_dataset = SpectralFusionDataset(train_path, mask_path,
+                                      transform=train_transform, concat=concat_flag,
+                                      data_name=data_name, rgb_input=mode[output_mode][0],
+                                      rgb_label=mode[output_mode][1])
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, 
+                                               shuffle=True, num_workers=4)
+test_dataset = SpectralFusionDataset(test_path, mask_path,
+                                     transform=test_transform, concat=concat_flag,
+                                     data_name=data_name, rgb_input=mode[output_mode][0],
+                                     rgb_label=mode[output_mode][1])
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, 
+                                               shuffle=True, num_workers=4)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, 
+                                              shuffle=True, num_workers=4)
+
+
+model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch, output_rgb_ch=output_rgb,
+                       output_hsi_ch=31, rgb_feature=31, hsi_feature=31, fusion_feature=31,
+                       layer_num=block_num).to(device)
 
 
 model.to(device)
-summary(model, (1, input_ch, 48, 48), depth=8)
-criterions = {'mse': torch.nn.MSELoss, 'mse_sam': MSE_SAMLoss}
+# summary_input = {'both': ((1, input_rgb, 48, 48), (1, input_ch, 48, 48)),
+#                  'inputOnly': ((1, 1, 48, 48), (1, input_ch, 48, 48)),
+#                  'outputOnly': ((3, input_rgb, 48, 48), (1, input_ch, 48, 48))}
+# summary(model, summary_input[output_mode], depth=8)
+criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
 criterion = criterions[loss_mode]().to(device)
 param = list(model.parameters())
 optim = torch.optim.Adam(lr=1e-3, params=param)
