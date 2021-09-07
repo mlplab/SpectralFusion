@@ -90,7 +90,8 @@ if os.path.exists(output_csv_path):
     sys.exit(0)
 
 
-test_dataset = PatchEvalDataset(test_path, mask_path, transform=None, concat=concat_flag)
+test_dataset = PatchEvalDataset(test_path, mask_path, transform=None, concat=concat_flag,
+                                load_mode=load_mode[data_name])
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,

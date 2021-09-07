@@ -55,9 +55,12 @@ loss_mode = args.loss
 device = 'cpu'
 
 
-mode = {'both': [True, True, 'fusion', 3, 3], 
-        'inputOnly': [False, True, 'fusion', 0, 3], 
+mode = {'both': [True, True, 'fusion', 3, 3],
+        'inputOnly': [False, True, 'fusion', 0, 3],
         'outputOnly': [True, False, 'mse', 3, 0]}
+load_mode = {'CAVE': 'mat',
+             'Harvard': 'mat',
+             'ICVL': 'mat'}
 img_path = f'../SCI_dataset/My_{data_name}'
 test_path = os.path.join(img_path, 'eval_data')
 mask_path  = os.path.join(img_path, 'eval_mask_data')
@@ -96,13 +99,14 @@ if os.path.exists(output_csv_path):
 
 
 test_dataset = SpectralFusionEvalDataset(test_path, mask_path,
-                                     transform=None, concat=concat_flag,
-                                     data_name=data_name, rgb_input=mode[output_mode][0],
-                                     rgb_label=mode[output_mode][1])
+                                         transform=None, concat=concat_flag,
+                                         data_name=data_name, rgb_input=mode[output_mode][0],
+                                         rgb_label=mode[output_mode][1],
+                                         load_mode=load_mode[data_name])
 
 
-model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch, 
-                       output_rgb_ch=output_rgb, output_hsi_ch=31, 
+model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
+                       output_rgb_ch=output_rgb, output_hsi_ch=31,
                        rgb_feature=31, hsi_feature=31, fusion_feature=31,
                        layer_num=block_num).to(device)
 
