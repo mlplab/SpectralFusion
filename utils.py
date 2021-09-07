@@ -71,10 +71,10 @@ def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=2
             idx = name.split('.')[0]
             if load_mode == 'mat':
                 f = scipy.io.loadmat(os.path.join(data_path, name))
-                data = f[data_key]
+                data = np.array(f[data_key])
             elif load_mode == 'h5':
                 data = h5py.File(os.path.join(data_path, name), 'r')
-                data = np.array(data[data_key].value).transpose(1, 2, 0)[::-1, :, :]
+                data = np.array(data[data_key]).transpose(1, 2, 0)[::-1, :, :]
             data = normalize(data)
             data = np.expand_dims(np.array(data, np.float32).transpose([2, 0, 1]), axis=0)
             tensor_data = torch.as_tensor(data)
@@ -105,9 +105,9 @@ def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256
         # f = scipy.io.loadmat(os.path.join(data_path, name))
         print(os.path.join(data_path, name))
         data = h5py.File(os.path.join(data_path, name), 'r')
-        data = np.array(data[data_key].value)
+        data = np.array(data[data_key]).transpose((1, 2, 0))
         data = normalize(data)
-        data = np.expand_dims(np.array(data, np.float32)), axis=0)[::-1, :, :]
+        data = np.expand_dims(np.array(data[::-1, :, :], np.float32).transpose([2, 0, 1]), axis=0)
         tensor_data = torch.as_tensor(data)
         patch_data = tensor_data.unfold(2, size, step).unfold(3, size, step)
         patch_data = patch_data.permute((0, 2, 3, 1, 4, 5)).reshape(-1, ch, size, size)
