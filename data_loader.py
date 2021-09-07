@@ -2,6 +2,7 @@
 
 
 import os
+import h5py
 import numpy as np
 import scipy.io as sio
 import torch
@@ -11,7 +12,7 @@ import torchvision
 class PatchMaskDataset(torch.utils.data.Dataset):
 
     def __init__(self, img_path: str, mask_path: str, *args, concat: bool=False,
-                 data_key: str='data', transform=None, **kwargs) -> None:
+                 data_key: str='data', transform=None, load_mode: str='mat', **kwargs) -> None:
 
         self.img_path = img_path
         self.data = os.listdir(img_path)
@@ -20,11 +21,15 @@ class PatchMaskDataset(torch.utils.data.Dataset):
         self.concat = concat
         self.data_key = data_key
         self.transforms = transform
+        self.load_mode = load_mode
         self.mask_transforms = torchvision.transforms.ToTensor()
 
     def __getitem__(self, idx: int) -> (torch.Tensor, torch.Tensor):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        if self.load_mode == 'mat':
+            mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        elif self.load_mode == 'h5':
+            mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
         nd_data = np.array(mat_data, dtype=np.float32).copy()
         if self.transforms is not None:
             for transform in self.transforms:
@@ -50,7 +55,10 @@ class PatchEvalDataset(PatchMaskDataset):
 
     def __getitem__(self, idx: int) -> (torch.Tensor, torch.Tensor):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        if self.load_mode == 'mat':
+            mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        elif self.load_mode == 'h5':
+            mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
         nd_data = np.array(mat_data, dtype=np.float32).copy()
         if self.transforms is not None:
             for transform in self.transforms:
@@ -73,7 +81,7 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
 
     def __init__(self, img_path: str, mask_path: str, *args, data_name='CAVE',
                  concat: bool=False, data_key: str='data', transform=None,
-                 # return_mode: str='dict',
+                 load_mode: str='mat',
                  rgb_input: bool=True, rgb_label: bool=True, **kwargs) -> None:
 
         self.img_path = img_path
@@ -85,6 +93,7 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
         self.transforms = transform
         self.mask_transforms = torchvision.transforms.ToTensor()
         self.data_name = data_name
+        self.load_mode = load_mode
         # self.return_mode = return_mode
         self.rgb_input = rgb_input
         self.rgb_label = rgb_label
@@ -94,7 +103,10 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        if self.load_mode == 'mat'
+            mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        elif self.load_mode == 'h5':
+            mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
         nd_data = np.array(mat_data, dtype=np.float32).copy()
         if self.transforms is not None:
             for transform in self.transforms:
@@ -137,7 +149,10 @@ class SpectralFusionEvalDataset(SpectralFusionDataset):
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        if self.load_mode == 'mat'
+            mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
+        elif self.load_mode == 'h5':
+            mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
         nd_data = np.array(mat_data, dtype=np.float32).copy()
         if self.transforms is not None:
             for transform in self.transforms:
