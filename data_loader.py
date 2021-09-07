@@ -103,7 +103,7 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        if self.load_mode == 'mat'
+        if self.load_mode == 'mat':
             mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
         elif self.load_mode == 'h5':
             mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
@@ -149,7 +149,7 @@ class SpectralFusionEvalDataset(SpectralFusionDataset):
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
-        if self.load_mode == 'mat'
+        if self.load_mode == 'mat':
             mat_data = sio.loadmat(os.path.join(self.img_path, self.data[idx]))[self.data_key]
         elif self.load_mode == 'h5':
             mat_data = h5py.File(os.path.join(self.img_path, self.data[idx]), 'r')[self.data_key]
