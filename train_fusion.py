@@ -55,9 +55,12 @@ if device == 'cuda':
     torch.backends.cudnn.benchmark = True
 
 
-mode = {'both': [True, True, 'fusion', 3, 3], 
-        'inputOnly': [False, True, 'fusion', 0, 3], 
+mode = {'both': [True, True, 'fusion', 3, 3],
+        'inputOnly': [False, True, 'fusion', 0, 3],
         'outputOnly': [True, False, 'mse', 3, 0]}
+load_mode = {'CAVE': 'mat',
+             'Harvard': 'mat',
+             'ICVL': 'mat'}
 img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
@@ -89,16 +92,18 @@ test_transform = None
 train_dataset = SpectralFusionDataset(train_path, mask_path,
                                       transform=train_transform, concat=concat_flag,
                                       data_name=data_name, rgb_input=mode[output_mode][0],
+                                      load_mode=load_mode[data_name],
                                       rgb_label=mode[output_mode][1])
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, 
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
                                                shuffle=True, num_workers=4)
 test_dataset = SpectralFusionDataset(test_path, mask_path,
                                      transform=test_transform, concat=concat_flag,
                                      data_name=data_name, rgb_input=mode[output_mode][0],
+                                     load_mode=load_mode[data_name],
                                      rgb_label=mode[output_mode][1])
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, 
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                                shuffle=True, num_workers=4)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, 
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                               shuffle=True, num_workers=4)
 
 
@@ -121,7 +126,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
 ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
                           mkdir=True, partience=1, varbose=True)
-trainer = Trainer(model, criterion, optim, scheduler=scheduler, 
+trainer = Trainer(model, criterion, optim, scheduler=scheduler,
                   callbacks=[ckpt_cb], device=device, use_amp=True,
                   psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)

@@ -47,6 +47,9 @@ model_name = args.model_name
 block_num = args.block_num
 output_mode = args.mode
 loss_mode = args.loss
+load_mode = {'CAVE': 'mat',
+             'Harvard': 'mat',
+             'ICVL': 'mat'}
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -79,12 +82,14 @@ if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
 
 
 train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
-train_dataset = PatchMaskDataset(train_path, mask_path, transform=train_transform, concat=concat_flag)
+train_dataset = PatchMaskDataset(train_path, mask_path, transform=train_transform, concat=concat_flag,
+                                 load_mode=load_mode[data_name])
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
 test_transform = None
-test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag)
+test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag,
+                                load_mode=load_mode[data_name])
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
 
 
@@ -103,7 +108,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
 ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
                           mkdir=True, partience=1, varbose=True)
-trainer = Trainer(model, criterion, optim, scheduler=scheduler, 
+trainer = Trainer(model, criterion, optim, scheduler=scheduler,
                   callbacks=[ckpt_cb], device=device, use_amp=True,
                   psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
