@@ -297,7 +297,6 @@ class ModelCheckPoint(object):
             loss = kwargs['loss']
             val_loss = kwargs['val_loss']
         loss = np.mean(loss)
-        print(type(loss), loss)
         val_loss = np.mean(val_loss)
         self.all_loss.append(loss)
         self.all_val_loss.append(val_loss)
