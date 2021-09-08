@@ -12,7 +12,7 @@ from trainer import Trainer
 from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
-from model.SubReconModel import SpectralFusion
+from model.SpectralFusion import SpectralFusion
 from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss
 from data_loader import PatchMaskDataset, SpectralFusionDataset
 from evaluate import PSNRMetrics, SAMMetrics

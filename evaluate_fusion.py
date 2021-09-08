@@ -14,7 +14,7 @@ from trainer import Trainer
 from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
-from model.SubReconModel import SpectralFusion
+from model.SpectralFusion import SpectralFusion
 from data_loader import PatchMaskDataset, PatchEvalDataset, SpectralFusionEvalDataset
 from evaluate import PSNRMetrics, SAMMetrics, RMSEMetrics
 from evaluate import ReconstEvaluater
