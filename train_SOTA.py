@@ -49,7 +49,7 @@ output_mode = args.mode
 loss_mode = args.loss
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
-             'ICVL': 'mat'}
+             'ICVL': 'h5'}
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -84,13 +84,13 @@ if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
 train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
 train_dataset = PatchMaskDataset(train_path, mask_path, transform=train_transform, concat=concat_flag,
                                  load_mode=load_mode[data_name])
-train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
 
 
 test_transform = None
 test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag,
                                 load_mode=load_mode[data_name])
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,

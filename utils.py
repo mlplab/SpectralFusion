@@ -83,7 +83,12 @@ def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=2
             for i in range(patch_data.size()[0]):
                 save_data = patch_data[i].to('cpu').detach().numpy().copy().transpose(1, 2, 0)
                 save_name = os.path.join(save_path, f'{idx}_{i:05d}.mat')
-                scipy.io.savemat(save_name, {'data': save_data})
+                if load_mode == 'mat':
+                    scipy.io.savemat(save_name, {'data': save_data})
+                elif load_mode == 'h5':
+                    with h5py.File(save_name, 'w') as f:
+                        f.create_dataset('data', data=save_data)
+
             show_kwargs['data_path'] = name
             show_kwargs['save_path_path'] = save_name
             pbar.set_postfix(show_kwargs)

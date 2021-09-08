@@ -60,7 +60,7 @@ mode = {'both': [True, True, 'fusion', 3, 3],
         'outputOnly': [True, False, 'mse', 3, 0]}
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
-             'ICVL': 'mat'}
+             'ICVL': 'h5'}
 img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
