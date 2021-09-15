@@ -5,7 +5,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
-import torchvison
+import torchvision
 from colour.colorimetry import transformations
 from .layers import Base_Module
 
@@ -321,7 +321,7 @@ class SpectralFusion(Base_Module):
         os.makedirs(save_dir, exist_ok=True)
         rgb_features = self.rgb_layer.get_feature(rgb, rgb_layers)
         hsi_features = self.hsi_layer.get_feature(hsi, hsi_layers)
-        fusion_features = self.fusion_layer.get_feature(fusion, fusion_layers)
+        fusion_features = self.get_feature(fusion, fusion_layers)
         features = {**rgb_features, **hsi_features, **fusion_features}
         for layer_name, feature in features.items():
             # nd_feature = feature.squeeze().detach().numpy().transpose(1, 2, 0)
@@ -339,8 +339,8 @@ class SpectralFusion(Base_Module):
                   save_dir: str='HSCNN_diff', **kwargs) -> None:
 
         mat_mode = kwargs.get('mat_mode', False)
-        rgb_layers = kwargs.get('rgb_layers', ['start_conv'] + list(self.rgb_layer.activation_layer.keys()) + ['output_conv'])
-        hsi_layers = kwargs.get('hsi_layers', ['start_conv'] + list(self.hsi_layer.activation_layer.keys()) + ['output_conv'])
+        rgb_layers = kwargs.get('rgb_layers', ['start_rgb_conv'] + list(self.rgb_layer.activation_layer.keys()) + ['output_rgb_conv'])
+        hsi_layers = kwargs.get('hsi_layers', ['start_hsi_conv'] + list(self.hsi_layer.activation_layer.keys()) + ['output_hsi_conv'])
         fusion_layers = kwargs.get('fusion_layers', list(self.fusion_layer.keys()))
         _, ch, h, w = label.shape
         row, col = int(np.ceil(np.sqrt(self.output_hsi_ch))), int(np.ceil(np.sqrt(self.output_hsi_ch)))
