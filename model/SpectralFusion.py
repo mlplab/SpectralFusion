@@ -311,12 +311,11 @@ class SpectralFusion(Base_Module):
                      save_dir: str='SpectralFusion_features', **kwargs) -> None:
 
         mat_mode = kwargs.get('mat_mode', False)
+        color_mode = kwargs.get('color_mode', False)
         rgb_layers = kwargs.get('rgb_layers', ['start_conv'] + list(self.rgb_layer.activation_layer.keys()) + ['output_conv'])
         hsi_layers = kwargs.get('hsi_layers', ['start_conv'] + list(self.hsi_layer.activation_layer.keys()) + ['output_conv'])
         fusion_layers = kwargs.get('fusion_layers', list(self.fusion_layer.keys()))
-        _, ch, h, w = label.shape
         row, col = int(np.ceil(np.sqrt(self.output_hsi_ch))), int(np.ceil(np.sqrt(self.output_hsi_ch)))
-        plot_array = np.zeros((h * row, col * w))
         os.makedirs(save_dir, exist_ok=True)
         rgb_features = self.rgb_layer.get_feature(rgb, rgb_layers)
         hsi_features = self.hsi_layer.get_feature(hsi, hsi_layers)
