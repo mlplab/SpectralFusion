@@ -1,6 +1,7 @@
 # coding: utf-8
 
 
+import os
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -111,7 +112,7 @@ class RGBHSCNN(Base_Module):
                 scipy.io.savemat(os.path.join(save_dir, f'{layer_name}.mat'), {'data': nd_feature, 'mean': feature_mean})
         plot_label = label.permute((1, 0, 2, 3))
         torchvision.utils.save_image(plot_label, os.path.join(save_dir, 'output_img.png'),
-                                        nrow=row, padding=0)
+                                     nrow=row, padding=0)
 
     def plot_color_img(self, input_img: np.ndarray,
                        save_name: str, *args, mode='CAVE', **kwargs):
@@ -230,7 +231,7 @@ class HSIHSCNN(Base_Module):
                 scipy.io.savemat(os.path.join(save_dir, f'{layer_name}.mat'), {'data': nd_feature, 'mean': feature_mean})
         plot_label = label.permute((1, 0, 2, 3))
         torchvision.utils.save_image(plot_label, os.path.join(save_dir, 'output_img.png'),
-                                        nrow=row, padding=0)
+                                     nrow=row, padding=0)
 
     def plot_color_img(self, input_img: np.ndarray,
                        save_name: str, *args, mode='CAVE', **kwargs):
@@ -363,7 +364,7 @@ class SpectralFusion(Base_Module):
                 scipy.io.savemat(os.path.join(save_dir, f'{layer_name}.mat'), {'data': nd_feature, 'mean': feature_mean})
         plot_label = label.permute((1, 0, 2, 3))
         torchvision.utils.save_image(plot_label, os.path.join(save_dir, 'output_img.png'),
-                                        nrow=row, padding=0)
+                                     nrow=row, padding=0)
 
     def plot_color_img(self, input_img: np.ndarray,
                        save_name: str, *args, mode='CAVE', **kwargs):
@@ -384,6 +385,7 @@ class SpectralFusion(Base_Module):
             all_img.append(trans_data)
         tensor_img = torch.Tensor(np.array(all_img)).permute(0, 3, 1, 2)
         torchvision.utils.save_image(tensor_img, save_name, nrow=row, padding=0)
+
 
 if __name__ == '__main__':
 
