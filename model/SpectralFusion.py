@@ -45,8 +45,8 @@ class RGBHSCNN(Base_Module):
         return_features = {}
         x = self.input_conv(x)
         x_in = x
-        if 'start_conv' in pick_layer:
-            return_features['start_conv'] = x_in
+        if 'start_rgb_conv' in pick_layer:
+            return_features['start_rgb_conv'] = x_in
         x = self.input_activation(x)
         for (layer_name, layer), (activation_name, activation) in zip(self.feature_layers.items(), self.activation_layer.items()):
             x = activation(layer(x))
@@ -60,7 +60,7 @@ class RGBHSCNN(Base_Module):
         '''
         output = self.output_conv(x)
         if 'output_conv' in pick_layer:
-            return_features['output_conv'] = output
+            return_features['output_rgb_conv'] = output
         return return_features
 
     def plot_feature(self, rgb: torch.Tensor, hsi: torch.Tensor, *args,
@@ -164,8 +164,8 @@ class HSIHSCNN(Base_Module):
         return_features = {}
         x = self.input_conv(x)
         x_in = x
-        if 'start_conv' in pick_layer:
-            return_features['start_conv'] = x_in
+        if 'start_hsi_conv' in pick_layer:
+            return_features['start_hsi_conv'] = x_in
         x = self.input_activation(x)
         for (layer_name, layer), (activation_name, activation) in zip(self.feature_layers.items(), self.activation_layer.items()):
             x = activation(layer(x))
@@ -314,8 +314,8 @@ class SpectralFusion(Base_Module):
 
         mat_mode = kwargs.get('mat_mode', False)
         color_mode = kwargs.get('color_mode', False)
-        rgb_layers = kwargs.get('rgb_layers', ['start_conv'] + list(self.rgb_layer.activation_layer.keys()) + ['output_conv'])
-        hsi_layers = kwargs.get('hsi_layers', ['start_conv'] + list(self.hsi_layer.activation_layer.keys()) + ['output_conv'])
+        rgb_layers = kwargs.get('rgb_layers', ['start_rgb_conv'] + list(self.rgb_layer.activation_layer.keys()) + ['output_rgb_conv'])
+        hsi_layers = kwargs.get('hsi_layers', ['start_hsi_conv'] + list(self.hsi_layer.activation_layer.keys()) + ['output_hsi_conv'])
         fusion_layers = kwargs.get('fusion_layers', list(self.fusion_layer.keys()))
         row, col = int(np.ceil(np.sqrt(self.output_hsi_ch))), int(np.ceil(np.sqrt(self.output_hsi_ch)))
         os.makedirs(save_dir, exist_ok=True)
