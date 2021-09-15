@@ -5,6 +5,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+import torchvison
 from colour.colorimetry import transformations
 from .layers import Base_Module
 
