@@ -87,28 +87,21 @@ if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
 
 train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
 test_transform = None
-
-
 train_dataset = SpectralFusionDataset(train_path, mask_path,
                                       transform=train_transform, concat=concat_flag,
-                                      data_name=data_name, rgb_input=mode[output_mode][0],
-                                      load_mode=load_mode[data_name],
-                                      rgb_label=mode[output_mode][1])
+                                      data_name=data_name)
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
                                                shuffle=True, num_workers=4)
 test_dataset = SpectralFusionDataset(test_path, mask_path,
                                      transform=test_transform, concat=concat_flag,
-                                     data_name=data_name, rgb_input=mode[output_mode][0],
-                                     load_mode=load_mode[data_name],
-                                     rgb_label=mode[output_mode][1])
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-                                               shuffle=True, num_workers=4)
+                                     data_name=data_name)
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
                                               shuffle=True, num_workers=4)
 
 
-model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch, output_rgb_ch=output_rgb,
-                       output_hsi_ch=31, rgb_feature=31, hsi_feature=31, fusion_feature=31,
+model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
+                       output_rgb_ch=output_rgb, output_hsi_ch=31,
+                       rgb_feature=31, hsi_feature=31, fusion_feature=31,
                        layer_num=block_num).to(device)
 
 
