@@ -347,7 +347,7 @@ class SpectralFusion(Base_Module):
         os.makedirs(save_dir, exist_ok=True)
         rgb_features = self.rgb_layer.get_feature(rgb, rgb_layers)
         hsi_features = self.hsi_layer.get_feature(hsi, hsi_layers)
-        fusion_features = self.fusion_layer.get_feature(fusion, fusion_layers)
+        fusion_features = self.get_feature(rgb, hsi, fusion_layers)
         features = {**rgb_features, **hsi_features, **fusion_features}
         for layer_name, feature in features.items():
             plot_array[:] = 0.
