@@ -40,9 +40,8 @@ for dataset in $datasets; do
         for concat in $concats; do
             i=1
             for mode in $modes; do
-                # echo $dataset $concat $mode $i $loss_modes[$i]
-                # python train_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i]
-                # python evaluate_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i]
+                python train_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i]
+                python evaluate_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i]
 
                 name_block_num=$(printf %02d $block_num)
                 model_name=$base_model_name\_$name_block_num\_${loss_modes[$i]}\_$mode\_$start_time\_$concat
