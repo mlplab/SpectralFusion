@@ -16,7 +16,7 @@ start_time=$(date "+%m%d")
 # start_time='0919'
 
 
-while getopts b:e:d:c:m:bn: OPT
+while getopts b:e:d:c:m:bn:s: OPT
 do
     echo "$OPTARG"
     case $OPT in
@@ -26,6 +26,7 @@ do
         c) concat=$OPTARG ;;
         m) model_name=$OPTARG ;;
         bn) block_num=$OPTARG ;;
+        s) start_time=$OPTARG ;;
         *) echo "Usage: $CMDNAME [-b batch size] [-e epoch]" 1>&2
             exit 1;;
     esac
