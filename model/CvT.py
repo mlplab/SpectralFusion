@@ -3,10 +3,7 @@
 
 import torch
 from  torchinfo import summary
-<<<<<<< HEAD
-from layers import DW_PT_Conv
-=======
->>>>>>> 10483b3318a7979b01d3acec64dca2c35799bde7
+from .layers import DW_PT_Conv
 
 
 class ConvEmbed(torch.nn.Module):
