@@ -136,7 +136,7 @@ class DW_PT_Conv(Base_Module):
         x = self.depth(x)
         x = self.activation(x)
         x = self.point(x)
-        x = self._activation_fn(x)
+        x = self.activation(x)
         return x
 
 
