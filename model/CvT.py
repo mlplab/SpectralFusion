@@ -3,7 +3,10 @@
 
 import torch
 from  torchinfo import summary
+<<<<<<< HEAD
 from layers import DW_PT_Conv
+=======
+>>>>>>> 10483b3318a7979b01d3acec64dca2c35799bde7
 
 
 class ConvEmbed(torch.nn.Module):
@@ -57,6 +60,11 @@ class MultiHeadConv(torch.nn.Module):
 
         attention_weight = torch.matmul(q, k.permute(0, 1, 3, 2))
         attention_weight = torch.sigmoid(attention_weight)
+<<<<<<< HEAD
+=======
+        print(v.shape)
+        print(attention_weight.shape)
+>>>>>>> 10483b3318a7979b01d3acec64dca2c35799bde7
         output = torch.matmul(attention_weight, v)
         output = torch.reshape(output, (b, c, h, w))
         return output
