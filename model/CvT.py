@@ -3,6 +3,7 @@
 
 import torch
 from  torchinfo import summary
+from layers import DW_PT_Conv
 
 
 class ConvEmbed(torch.nn.Module):
@@ -23,7 +24,7 @@ class ConvProj(torch.nn.Module):
     def __init__(self, input_ch: int, output_ch: int, *args,
                  feature_num: int=64, kernel_size: int=3, stride: int=1, **kwargs) -> None:
         super().__init__()
-        self.conv_layer = torch.nn.Conv2d(input_ch, output_ch, kernel_size=kernel_size, stride=stride, padding=kernel_size // 2)
+        self.conv_layer = DW_PT_Conv(input_ch, output_ch, kernel_size=kernel_size, stride=stride, padding=kernel_size // 2)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         b, c, h, w = x.shape
@@ -56,8 +57,6 @@ class MultiHeadConv(torch.nn.Module):
 
         attention_weight = torch.matmul(q, k.permute(0, 1, 3, 2))
         attention_weight = torch.sigmoid(attention_weight)
-        print(v.shape)
-        print(attention_weight.shape)
         output = torch.matmul(attention_weight, v)
         output = torch.reshape(output, (b, c, h, w))
         return output
