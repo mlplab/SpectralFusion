@@ -17,8 +17,8 @@ mat_img_names = {'CAVE': 'real_and_fake_peppers_ms_00000',
                  'Harvard': 'imgf3_00003'}
 for data_name in data_names:
     ckpt_path = '../SCI_result'
-    result_path = f'../SCI_result/{data_name}_0919'
-    move_path = f'../upload_0922/{data_name}/hsi'
+    result_path = f'../SCI_result/{data_name}_0924'
+    move_path = f'../upload_0926/{data_name}/propose_no_rgb_branch'
     os.makedirs(move_path, exist_ok=True)
     os.makedirs(os.path.join(move_path, 'csv'), exist_ok=True)
     figure_dir = 'output_img'
@@ -30,7 +30,7 @@ for data_name in data_names:
     model_name = 'HSIHSCNN'
     block_nums = [3, 5, 7]
     # output_mode = 'inputOnly'
-    date = '0919'
+    date = '0924'
     loss_mode = 'mse'
     concat_flag = [False, True]
 
@@ -55,6 +55,9 @@ for data_name in data_names:
             # save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{date}_{concat}'
             save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{date}_{concat}'
             base_path = os.path.join(result_path, save_model_name)
+            if os.path.exists(os.path.join(base_path, 'output.csv')) is False:
+                print(base_path)
+                continue
             shutil.copy(os.path.join(base_path, 'output.csv'), os.path.join(move_path, 'csv', f'{save_model_name}.csv'))
             os.makedirs(os.path.join(move_img_path, save_model_name), exist_ok=True)
             mat_path = os.path.join(base_path, mat_dir)
