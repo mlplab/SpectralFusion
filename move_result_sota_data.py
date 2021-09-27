@@ -25,7 +25,6 @@ for data_name in data_names:
     img_id = 2
     mat_dir = 'output_mat'
     csv_path = 'output.csv'
-    base_mat_name = 'real_and_fake_peppers_ms_00000.mat'
 
 
     model_names = ['HSCNN', 'HyperReconNet', 'DeepSSPrior']
@@ -54,7 +53,8 @@ for data_name in data_names:
         for concat in concat_flag:
             save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{date}_{concat}'
             base_path = os.path.join(result_path, save_model_name)
-            shutil.copy(os.path.join(base_path, 'output.csv'), os.path.join(move_path, 'csv', f'{save_model_name}.csv'))
+            shutil.copy(os.path.join(base_path, 'output.csv'), 
+                        os.path.join(move_path, 'csv', f'{save_model_name}.csv'))
             os.makedirs(os.path.join(move_img_path, save_model_name), exist_ok=True)
             mat_path = os.path.join(base_path, mat_dir)
             mat_data = scipy.io.loadmat(os.path.join(mat_path, f'{img_id:05d}.mat'))['data']
