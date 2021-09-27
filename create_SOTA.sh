@@ -7,7 +7,7 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("CAVE" "Harvard" "ICVL")
+datasets=("CAVE" "Harvard")
 model_names=("HSCNN" "HyperReconNet" "DeepSSPrior")
 block_num=9
 concats=('False' 'True')
@@ -42,7 +42,8 @@ for dataset in $datasets; do
                 python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
                 python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
 
-                model_name=$model_name\_0$block_num\_$loss_mode\_$start_time\_$concat
+                name_block_num=$(printf %02d $block_num)
+                model_name=$model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
                 mkdir ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
                 cp ../SCI_result/$dataset\_sota_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
                 skicka upload ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
