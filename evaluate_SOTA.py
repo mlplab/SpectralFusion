@@ -55,7 +55,7 @@ loss_mode = args.loss
 device = 'cpu'
 
 
-img_path = f'../SCI_dataset/My_{data_name}_128'
+img_path = f'../SCI_dataset/My_{data_name}'
 test_path = os.path.join(img_path, 'eval_data')
 mask_path  = os.path.join(img_path, 'eval_mask_data')
 sota_path = os.path.join('../SCI_ckpt', f'{data_name}_SOTA')
@@ -90,8 +90,7 @@ if os.path.exists(output_csv_path):
     sys.exit(0)
 
 
-test_dataset = PatchEvalDataset(test_path, mask_path, transform=None, concat=concat_flag,
-                                load_mode=load_mode[data_name])
+test_dataset = PatchEvalDataset(test_path, mask_path, transform=None, concat=concat_flag)
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
