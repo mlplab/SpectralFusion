@@ -11,7 +11,7 @@ datasets=("CAVE" "Harvard")
 model_names=("HSCNN" "HyperReconNet" "DeepSSPrior")
 block_num=9
 concats=('False' 'True')
-loss_modes=("mse" "mse_sam")
+loss_mode="mse"
 start_time=$(date "+%m%d")
 # start_time='0702'
 
@@ -36,19 +36,17 @@ done
 for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
     for concat in $concats; do
-        for loss_mode in $loss_modes; do
-            for model_name in $model_names; do
-                echo $dataset $concat $loss_mode $model_name
-                python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
-                python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
+        for model_name in $model_names; do
+            echo $dataset $concat $loss_mode $model_name
+            python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
+            python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
 
-                name_block_num=$(printf %02d $block_num)
-                model_name=$model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
-                mkdir ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-                cp ../SCI_result/$dataset\_sota_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-                skicka upload ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
-                skicka upload ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
-            done
+            name_block_num=$(printf %02d $block_num)
+            model_name=$model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            mkdir ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
+            cp ../SCI_result/$dataset\_sota_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
+            skicka upload ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
+            skicka upload ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
         done
     done
 done
