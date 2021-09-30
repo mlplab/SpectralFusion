@@ -282,7 +282,7 @@ class SpectralFusion(Base_Module):
             rgb_x = hsi_x
         for i in range(self.layer_num):
             if self.res is True:
-                rgb_in, hsi_x = rgb_x, hsi_x
+                rgb_in, hsi_in = rgb_x, hsi_x
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
             hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
