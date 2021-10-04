@@ -275,6 +275,9 @@ class SpectralFusion(Base_Module):
         if mode == 'c':
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
                                                     for i in range(layer_num)})
+        if mode == '3':
+            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
+                                                    for i in range(layer_num)})
         elif mode == 'm':
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Sigmoid()
                                                     for i in range(layer_num)})

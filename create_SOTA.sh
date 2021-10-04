@@ -34,6 +34,7 @@ done
 
 
 for dataset in $datasets; do
+    skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
     for concat in $concats; do
         for model_name in $model_names; do
