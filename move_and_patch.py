@@ -82,7 +82,7 @@ print(len(train_list), len(test_list))
 
 
 make_patch_list(data_path, train_list, train_patch_path, size=patch_size,step=patch_step, ch=31, data_key=data_key[data_name], load_mode=load_mode[data_name])
-make_patch_list(data_path, test_list, test_patch_path, size=patch_size, step=patch_step, ch=31, data_key=data_key[data_name], load_mode=load_mode[data_name])
+make_patch_list(data_path, test_list, test_patch_path, size=show_size, step=show_step, ch=31, data_key=data_key[data_name], load_mode=load_mode[data_name])
 make_patch_list(data_path, test_list, eval_path, size=show_size, step=show_step, ch=31, data_key=data_key[data_name], load_mode=load_mode[data_name])
 make_patch_list(data_path, test_list, eval_show_path, size=show_size, step=show_step, ch=31, data_key=data_key[data_name], load_mode=load_mode[data_name])
 
