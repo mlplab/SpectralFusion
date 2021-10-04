@@ -1,6 +1,9 @@
 # !/usr/bin/zsh
 
 
-zsh create_SOTA.sh -s 0924
-zsh create_fusion.sh -s 0924
-zsh create_hsiOnly.sh -s 0924
+start_time=$(date "+%m%d")
+
+
+zsh create_SOTA.sh -s $start_time
+zsh create_fusion.sh -s $start_time
+zsh create_hsiOnly.sh -s $start_time
