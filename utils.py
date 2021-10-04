@@ -278,6 +278,8 @@ class ModelCheckPoint(object):
         self.verbose = verbose
         self.all_loss = []
         self.all_val_loss = []
+        self.loss = []
+        self.val_loss = []
         if mkdir is True:
             if os.path.exists(self.checkpoint_path):
                 shutil.rmtree(self.checkpoint_path)
@@ -296,8 +298,8 @@ class ModelCheckPoint(object):
         else:
             loss = kwargs['loss']
             val_loss = kwargs['val_loss']
-        loss = np.mean(loss)
-        val_loss = np.mean(val_loss)
+        loss = loss[0]
+        val_loss = val_loss[0]
         self.all_loss.append(loss)
         self.all_val_loss.append(val_loss)
         save_file = self.model_name + f'_epoch_{epoch:05d}_loss_{loss:.7f}_valloss_{val_loss:.7f}.tar'
