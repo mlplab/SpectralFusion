@@ -90,7 +90,7 @@ train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_s
 test_transform = None
 test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag,
                                 load_mode=load_mode[data_name])
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=8)
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,

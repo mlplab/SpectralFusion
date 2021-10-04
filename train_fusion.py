@@ -95,8 +95,8 @@ train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_s
 test_dataset = SpectralFusionDataset(test_path, mask_path,
                                      transform=test_transform, concat=concat_flag,
                                      data_name=data_name)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-                                              shuffle=True, num_workers=4)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, 
+        shuffle=False, num_workers=8)
 
 
 model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
