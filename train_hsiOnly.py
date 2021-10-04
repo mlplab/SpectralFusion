@@ -59,8 +59,8 @@ mode = {'both': [True, True, 'fusion', 3, 3],
         'inputOnly': [False, True, 'fusion', 0, 3],
         'outputOnly': [True, False, 'mse', 3, 0]}
 load_mode = {'CAVE': 'mat',
-        'Harvard': 'mat',
-        'ICVL': 'h5'}
+             'Harvard': 'mat',
+             'ICVL': 'h5'}
 img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
@@ -84,20 +84,21 @@ if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
 train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
 test_transform = None
 train_dataset = PatchMaskDataset(train_path, mask_path,
-        transform=train_transform, concat=concat_flag,
-        data_name=data_name)
+                                 transform=train_transform, concat=concat_flag,
+                                 data_name=data_name)
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-        shuffle=True, num_workers=4)
+                                               shuffle=True, num_workers=4)
 test_dataset = PatchMaskDataset(test_path, mask_path,
-        transform=test_transform, concat=concat_flag,
-        data_name=data_name)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-        shuffle=True, num_workers=4)
+                                transform=test_transform, concat=concat_flag,
+                                data_name=data_name)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
+                                              shuffle=False, num_workers=8)
 
 
-model = HSIHSCNN(input_ch=input_ch, output_ch=31, feature_num=31, layer_num=block_num).to(device)
-criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss,
-        'fusion': FusionLoss}
+model = HSIHSCNN(input_ch=input_ch, output_ch=31,
+                 feature_num=31, layer_num=block_num).to(device)
+criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss,
+              'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
 criterion = criterions[loss_mode]().to(device)
 param = list(model.parameters())
 optim = torch.optim.Adam(lr=1e-3, params=param)
@@ -105,13 +106,13 @@ scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
 
 ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
-        mkdir=True, partience=1, varbose=True)
+                          mkdir=True, partience=1, varbose=True)
 trainer = Trainer(model, criterion, optim, scheduler=scheduler,
-        callbacks=[ckpt_cb], device=device, use_amp=True,
-        psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
+                  callbacks=[ckpt_cb], device=device, use_amp=True,
+                  psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
 torch.save({'model_state_dict': model.state_dict(),
-    'optim': optim.state_dict(),
-    'train_loss': train_loss, 'val_loss': val_loss,
-    'epoch': epochs},
-    os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
+            'optim': optim.state_dict(),
+            'train_loss': train_loss, 'val_loss': val_loss,
+            'epoch': epochs},
+           os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
