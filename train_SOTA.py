@@ -61,6 +61,7 @@ img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
 mask_path = os.path.join(img_path, 'mask_data')
+eval_mask_path = os.path.join(img_path, 'eval_mask_data')
 callback_path = os.path.join(img_path, 'callback_path')
 callback_mask_path = os.path.join(img_path, 'mask_show_data')
 callback_result_path = os.path.join('../SCI_result', f'{data_name}_{dt_now}', f'{model_name}_{block_num}')
@@ -88,9 +89,9 @@ train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_s
 
 
 test_transform = None
-test_dataset = PatchMaskDataset(test_path, mask_path, transform=test_transform, concat=concat_flag,
+test_dataset = PatchMaskDataset(test_path, eval_mask_path, transform=test_transform, concat=concat_flag,
                                 load_mode=load_mode[data_name])
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size, shuffle=True, num_workers=8)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=8)
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
@@ -109,7 +110,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
                           mkdir=True, partience=1, varbose=True)
 trainer = Trainer(model, criterion, optim, scheduler=scheduler,
-                  callbacks=[ckpt_cb], device=device, use_amp=False,
+                  callbacks=[ckpt_cb], device=device, use_amp=True,
                   psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
 torch.save({'model_state_dict': model.state_dict(),

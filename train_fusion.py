@@ -65,6 +65,7 @@ img_path = f'../SCI_dataset/My_{data_name}'
 train_path = os.path.join(img_path, 'train_patch_data')
 test_path = os.path.join(img_path, 'test_patch_data')
 mask_path = os.path.join(img_path, 'mask_data')
+eval_mask_path = os.path.join(img_path, 'eval_mask_data')
 callback_path = os.path.join(img_path, 'callback_path')
 callback_mask_path = os.path.join(img_path, 'mask_show_data')
 callback_result_path = os.path.join('../SCI_result', f'{data_name}_{dt_now}', f'{model_name}_{block_num}')
@@ -92,11 +93,11 @@ train_dataset = SpectralFusionDataset(train_path, mask_path,
                                       data_name=data_name)
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
                                                shuffle=True, num_workers=4)
-test_dataset = SpectralFusionDataset(test_path, mask_path,
+test_dataset = SpectralFusionDataset(test_path, eval_mask_path,
                                      transform=test_transform, concat=concat_flag,
                                      data_name=data_name)
-test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=batch_size,
-                                              shuffle=True, num_workers=4)
+test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, 
+        shuffle=False, num_workers=8)
 
 
 model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
@@ -120,7 +121,7 @@ scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
                           mkdir=True, partience=1, varbose=True)
 trainer = Trainer(model, criterion, optim, scheduler=scheduler,
-                  callbacks=[ckpt_cb], device=device, use_amp=False,
+                  callbacks=[ckpt_cb], device=device, use_amp=True,
                   psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
 torch.save({'model_state_dict': model.state_dict(),

@@ -17,20 +17,19 @@ mat_img_names = {'CAVE': 'real_and_fake_peppers_ms_00000',
                  'Harvard': 'imgf3_00003'}
 for data_name in data_names:
     ckpt_path = '../SCI_result'
-    result_path = f'../SCI_result/{data_name}_sota_0903'
-    move_path = f'../upload_0922/{data_name}/related'
+    result_path = f'../SCI_result/{data_name}_sota_0924'
+    move_path = f'../upload_0926/{data_name}/related'
     os.makedirs(move_path, exist_ok=True)
     os.makedirs(os.path.join(move_path, 'csv'), exist_ok=True)
     figure_dir = 'output_img'
     img_id = 2
     mat_dir = 'output_mat'
     csv_path = 'output.csv'
-    base_mat_name = 'real_and_fake_peppers_ms_00000.mat'
 
 
     model_names = ['HSCNN', 'HyperReconNet', 'DeepSSPrior']
     block_num = 9
-    date = '0903'
+    date = '0924'
     loss_mode = 'mse'
     concat_flag = [False, True]
 
@@ -54,7 +53,11 @@ for data_name in data_names:
         for concat in concat_flag:
             save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{date}_{concat}'
             base_path = os.path.join(result_path, save_model_name)
-            shutil.copy(os.path.join(base_path, 'output.csv'), os.path.join(move_path, 'csv', f'{save_model_name}.csv'))
+            if os.path.exists(os.path.join(base_path, 'output.csv')) is False:
+                print(base_path)
+                continue
+            shutil.copy(os.path.join(base_path, 'output.csv'), 
+                        os.path.join(move_path, 'csv', f'{save_model_name}.csv'))
             os.makedirs(os.path.join(move_img_path, save_model_name), exist_ok=True)
             mat_path = os.path.join(base_path, mat_dir)
             mat_data = scipy.io.loadmat(os.path.join(mat_path, f'{img_id:05d}.mat'))['data']

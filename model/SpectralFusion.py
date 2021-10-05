@@ -2,6 +2,7 @@
 
 
 import os
+import scipy.io
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
@@ -259,18 +260,28 @@ class SpectralFusion(Base_Module):
 
     def __init__(self, input_hsi_ch: int, input_rgb_ch: int, output_hsi_ch: int,
                  output_rgb_ch: int, *args, rgb_feature: int=64, hsi_feature: int=64,
-                 fusion_feature: int=64, layer_num: int=3, **kwargs) -> None:
+                 fusion_feature: int=64, layer_num: int=3, res: bool=False, 
+                 mode: str='c', **kwargs) -> None:
         super().__init__()
         self.input_rgb_ch = input_rgb_ch
         self.output_rgb_ch = output_rgb_ch
         self.output_hsi_ch = output_hsi_ch
         self.layer_num = layer_num
+        self.res = res
+        self.mode = mode
         self.rgb_layer = RGBHSCNN(input_rgb_ch, output_rgb_ch, feature_num=rgb_feature,
                                   layer_num=layer_num)
         self.hsi_layer = HSIHSCNN(input_hsi_ch, output_hsi_ch, feature_num=hsi_feature,
                                   layer_num=layer_num)
-        self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
-                                                for i in range(layer_num)})
+        if mode == 'c':
+            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
+                                                    for i in range(layer_num)})
+        if mode == '3':
+            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 3, 1, 1)
+                                                    for i in range(layer_num)})
+        elif mode == 'm':
+            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Sigmoid()
+                                                    for i in range(layer_num)})
 
     def forward(self, rgb: torch.Tensor, hsi: torch.Tensor) -> (torch.Tensor, torch.Tensor):
 
@@ -280,10 +291,17 @@ class SpectralFusion(Base_Module):
         else:
             rgb_x = hsi_x
         for i in range(self.layer_num):
+            if self.res is True:
+                rgb_in, hsi_in = rgb_x, hsi_x
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
-            fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
+            if self.mode in ('c', '3'):
+                fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
+            elif self.mode == 'm':
+                fusion_feature = rgb_x * hsi_x
             hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
             hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
+            if self.res is True:
+                rgb_x, hsi_x = rgb_x + rgb_in, hsi_x + hsi_in
         output_hsi = self.hsi_layer.output_conv(hsi_x)
         if self.output_rgb_ch >= 1:
             output_rgb = self.rgb_layer.output_conv(rgb_x)
@@ -302,7 +320,10 @@ class SpectralFusion(Base_Module):
             rgb_x = hsi_x
         for i in range(self.layer_num):
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
-            fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
+            if self.mode in ('c', '3'):
+                fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
+            elif self.mode == 'm':
+                fusion_feature = rgb_x * hsi_x
             hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
             if f'Fusion_{i}' in pick_layer:
                 return_features[f'Fusion_{i}'] = hsi_x
@@ -319,9 +340,11 @@ class SpectralFusion(Base_Module):
         fusion_layers = kwargs.get('fusion_layers', list(self.fusion_layer.keys()))
         row, col = int(np.ceil(np.sqrt(self.output_hsi_ch))), int(np.ceil(np.sqrt(self.output_hsi_ch)))
         os.makedirs(save_dir, exist_ok=True)
+        if self.input_rgb_ch == 0:
+            rgb = self.hsi_layer.input_activation(self.hsi_layer.input_conv(hsi))
         rgb_features = self.rgb_layer.get_feature(rgb, rgb_layers)
         hsi_features = self.hsi_layer.get_feature(hsi, hsi_layers)
-        fusion_features = self.get_feature(fusion, fusion_layers)
+        fusion_features = self.get_feature(rgb, hsi, fusion_layers)
         features = {**rgb_features, **hsi_features, **fusion_features}
         for layer_name, feature in features.items():
             # nd_feature = feature.squeeze().detach().numpy().transpose(1, 2, 0)
@@ -346,6 +369,8 @@ class SpectralFusion(Base_Module):
         row, col = int(np.ceil(np.sqrt(self.output_hsi_ch))), int(np.ceil(np.sqrt(self.output_hsi_ch)))
         plot_array = np.zeros((h * row, col * w))
         os.makedirs(save_dir, exist_ok=True)
+        if self.input_rgb_ch == 0:
+            rgb = self.hsi_layer.input_activation(self.hsi_layer.input_conv(hsi))
         rgb_features = self.rgb_layer.get_feature(rgb, rgb_layers)
         hsi_features = self.hsi_layer.get_feature(hsi, hsi_layers)
         fusion_features = self.get_feature(rgb, hsi, fusion_layers)

@@ -57,18 +57,18 @@ class Trainer(object):
             train_loss = []
             val_loss = []
             desc_str = f'{mode:>5} Epoch: {epoch + 1:05d} / {epochs:05d}'
-            show_mean = self._all_step(train_dataloader, mode=mode, desc_str=desc_str, columns=columns)
-            train_output.append(show_mean)
+            train_show_mean = self._all_step(train_dataloader, mode=mode, desc_str=desc_str, columns=columns)
+            train_output.append(train_show_mean)
 
             self.model.eval()
             mode = 'Val'
             desc_str = f'{mode:>5} Epoch: {epoch + 1:05d} / {epochs:05d}'
-            show_mean = self._all_step(val_dataloader, mode=mode, desc_str=desc_str, columns=columns)
-            val_output.append(show_mean)
+            val_show_mean = self._all_step(val_dataloader, mode=mode, desc_str=desc_str, columns=columns)
+            val_output.append(train_show_mean)
             if self.callbacks:
                 for callback in self.callbacks:
-                    callback.callback(self.model, epoch, loss=train_loss,
-                                      val_loss=val_loss, save=True,
+                    callback.callback(self.model, epoch, loss=train_show_mean,
+                                      val_loss=val_show_mean, save=True,
                                       device=self.device, optim=self.optimizer)
             if self.scheduler is not None:
                 self.scheduler.step()
