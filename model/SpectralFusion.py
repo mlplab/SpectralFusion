@@ -50,9 +50,10 @@ class RGBHSCNN(Base_Module):
             return_features['start_rgb_conv'] = x_in
         x = self.input_activation(x)
         for (layer_name, layer), (activation_name, activation) in zip(self.feature_layers.items(), self.activation_layer.items()):
-            x = activation(layer(x))
+            x = layer(x)
             if activation_name in pick_layer:
                 return_features[activation_name] = x
+            x = activation(x)
         '''
         if self.residual:
             output = self.residual_conv(x) + x_in
@@ -169,9 +170,10 @@ class HSIHSCNN(Base_Module):
             return_features['start_hsi_conv'] = x_in
         x = self.input_activation(x)
         for (layer_name, layer), (activation_name, activation) in zip(self.feature_layers.items(), self.activation_layer.items()):
-            x = activation(layer(x))
+            x = layer(x)
             if activation_name in pick_layer:
                 return_features[activation_name] = x
+            x = activation(x)
         '''
         if self.residual:
             output = self.residual_conv(x) + x_in
