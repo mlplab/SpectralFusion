@@ -85,24 +85,29 @@ class CvT(torch.nn.Module):
 
         self.layer_num = layer_num
         self.start_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
-        self.embedding = torch.nn.ModuleDict({f'Embed_{idx + 1}': ConvEmbed(feature_num, feature_num, feature_num=feature_num)
-                                              for idx in range(layer_num)})
-        self.attn = torch.nn.ModuleDict({f'Attn_{idx + 1}': MultiHeadConv(feature_num, feature_num, head_num, feature_num=feature_num)
-                                         for idx in range(layer_num)})
-        self.layer_out_conv = torch.nn.ModuleDict({f'Out_Conv_{idx + 1}': OutputConv(feature_num, feature_num, alpha=alpha)
-                                                   for idx in range(layer_num)})
+        self.conv_layer = torch.nn.ModuleDict({f'Conv_{idx + 1}': torch.nn.Conv2d(feature_num, feature_num, 3, 1, 1)
+                                           for idx in range(layer_num)})
+        self.activation_layer = torch.nn.ModuleDict({f'Act_{idx + 1}': torch.nn.ReLU()
+                                                     for idx in range(layer_num)})
+        self.embedding = torch.nn.ModuleDict({'Embed': ConvEmbed(feature_num, feature_num, feature_num=feature_num)})
+        self.attn = torch.nn.ModuleDict({'Attn': MultiHeadConv(feature_num, feature_num, head_num, feature_num=feature_num)})
+
+        self.layer_out_conv = torch.nn.ModuleDict({'Out_Conv': OutputConv(feature_num, feature_num, alpha=alpha)})
         self.output_conv = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         x = self.start_conv(x)
+        x_in = x
         for idx in range(self.layer_num):
-            x_in = x
-            x = self.embedding[f'Embed_{idx + 1}'](x)
-            x = self.attn[f'Attn_{idx + 1}'](x)
-            x_in = x + x_in
-            x = self.layer_out_conv[f'Out_Conv_{idx + 1}'](x)
+            x = self.activation_layer[f'Act_{idx + 1}'](self.conv_layer[f'Conv_{idx + 1}'](x))
             x = x + x_in
+            x_in = x
+        x = self.embedding['Embed'](x)
+        x = self.attn['Attn'](x)
+        x_in = x + x_in
+        x = self.layer_out_conv['Out_Conv'](x)
+        x = x + x_in
         x = self.output_conv(x)
         return x
 
