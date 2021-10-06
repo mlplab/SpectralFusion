@@ -262,9 +262,10 @@ class SpectralFusion(Base_Module):
 
     def __init__(self, input_hsi_ch: int, input_rgb_ch: int, output_hsi_ch: int,
                  output_rgb_ch: int, *args, rgb_feature: int=64, hsi_feature: int=64,
-                 fusion_feature: int=64, layer_num: int=3, res: bool=False, 
+                 fusion_feature: int=64, layer_num: int=3, res: bool=False,
                  mode: str='c', **kwargs) -> None:
         super().__init__()
+        activation = kwargs.get('activation', 'relu')
         self.input_rgb_ch = input_rgb_ch
         self.output_rgb_ch = output_rgb_ch
         self.output_hsi_ch = output_hsi_ch
@@ -284,6 +285,8 @@ class SpectralFusion(Base_Module):
         elif mode == 'm':
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Sigmoid()
                                                     for i in range(layer_num)})
+        self.fusion_activation = torch.nn.ModuleDict({f'Fusion_Act_{i}': self.activations[activation]()
+                                                      for i in range(layer_num)})
 
     def forward(self, rgb: torch.Tensor, hsi: torch.Tensor) -> (torch.Tensor, torch.Tensor):
 
@@ -301,6 +304,7 @@ class SpectralFusion(Base_Module):
             elif self.mode == 'm':
                 fusion_feature = rgb_x * hsi_x
             hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
+            hsi_x = self.fusion_activation[f'Fusion_Act_{i}'](hsi_x)
             hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
             if self.res is True:
                 rgb_x, hsi_x = rgb_x + rgb_in, hsi_x + hsi_in
