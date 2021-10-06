@@ -7,6 +7,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import torch
 import torchvision
+from torchinfo import summary
 from colour.colorimetry import transformations
 from .layers import Base_Module, HSI_prior_block, EDSR_Block
 
@@ -416,7 +417,46 @@ class SpectralFusion(Base_Module):
         torchvision.utils.save_image(tensor_img, save_name, nrow=row, padding=0)
 
 
+class SpectralFusion_OnlyRes(Base_Module):
+
+    def __init__(self, input_hsi_ch: int, input_rgb_ch: int, output_hsi_ch: int,
+                 output_rgb_ch: int, *args, rgb_feature: int=64, hsi_feature: int=64,
+                 fusion_feature: int=64, layer_num: int=3, res: bool=False, **kwargs) -> None:
+        super().__init__()
+        activation = kwargs.get('activation', 'relu')
+        self.input_rgb_ch = input_rgb_ch
+        self.output_rgb_ch = output_rgb_ch
+        self.output_hsi_ch = output_hsi_ch
+        self.layer_num = layer_num
+        self.res = res
+        self.mode = mode
+        self.rgb_layer = RGBHSCNN(input_rgb_ch, output_rgb_ch, feature_num=rgb_feature,
+                                  layer_num=layer_num)
+        self.hsi_layer = HSIHSCNN(input_hsi_ch, output_hsi_ch, feature_num=hsi_feature,
+                                  layer_num=layer_num)
+
+    def forward(self, rgb: torch.Tensor, hsi: torch.Tensor) -> (torch.Tensor, torch.Tensor):
+
+        hsi_x = self.hsi_layer.input_activation(self.hsi_layer.input_conv(hsi))
+        if self.input_rgb_ch >= 1:
+            rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(rgb))
+        else:
+            rgb_x = hsi_x
+        for i in range(self.layer_num):
+            rgb_x = self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x)
+            hsi_x = hsi_x + rgb_x
+            hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
+            rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](rgb_x)
+        output_hsi = self.hsi_layer.output_conv(hsi_x)
+        if self.output_rgb_ch >= 1:
+            output_rgb = self.rgb_layer.output_conv(rgb_x)
+            return output_rgb, output_hsi
+        else:
+            return output_hsi
+
+
 if __name__ == '__main__':
 
-    model = HSCNN(1, 31, activation='sin2')
-    summary(model, (1, 64, 64))
+    model = SpectralFusion_OnlyRes(input_hsi_ch=1, input_rgb_ch=0, 
+                                   output_hsi_ch=31, output_rgb_ch=3, 
+                                   rgb_feature=31, hsi_feature=31)
