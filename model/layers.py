@@ -158,7 +158,7 @@ class HSI_prior_block(Base_Module):
         h = self.activation(h)
         h = self.spatial_2(h)
         x = h + x_in
-        x = self.spectral(x)
+        # x = self.spectral(x)
         return x
 
 
@@ -438,3 +438,25 @@ class Mix_SS_Layer(torch.nn.Module):
         h = self.se_block(h)
         h = self.spectral_conv(h)
         return h + self.shortcut(x)
+
+
+# ################################ Fusion Layer ##############################
+
+
+class EDSR_Block(Base_Module):
+
+    def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64, 
+                 activation: str='relu') -> None:
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        self.activation = self.activations[activation]()
+        self.conv2 = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x_in = x
+        x = self.conv1(x)
+        x = self.activation(x)
+        x = self.conv2(x)
+        x = x + x_in
+        return x
+
