@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision
 from colour.colorimetry import transformations
-from .layers import Base_Module, HSI_prior_block
+from .layers import Base_Module, HSI_prior_block, EDSR_Block
 
 
 def normalize(data):
@@ -147,25 +147,19 @@ class HSIHSCNN(Base_Module):
         activation = kwargs.get('activation', 'relu').lower()
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        # self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': torch.nn.Conv2d(feature_num, feature_num, 3, 1, 1)
-        #                                            for i in range(layer_num)})
-        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': HSI_prior_block(feature_num, feature_num)
+        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': EDSR_Block(feature_num, feature_num)
                                                    for i in range(layer_num)})
         self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)
                                               for i in range(layer_num)})
-        # self.activation_layer = torch.nn.ModuleDict({f'HSI_act_{i}': self.activations[activation]()
-        #                                              for i in range(layer_num)})
+        self.activation_layer = torch.nn.ModuleDict({f'HSI_act_{i}': self.activations[activation]()
+                                                     for i in range(layer_num)})
         self.output_conv = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.input_activation(self.input_conv(x))
         # for layer, res_block in zip(self.feature_layers.values(), self.res_block.values()):
-        for layer in self.feature_layers.values():
-            x_in = x
-            x_hsi = layer(x)
-            # x_res = res_block(x)
-            # x = activation(layer(x))
-            x = x_in + x_hsi
+        for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
+            x_hsi = activation(layer(x))
         x = self.output_conv(x)
         return x
 
@@ -304,18 +298,13 @@ class SpectralFusion(Base_Module):
         else:
             rgb_x = hsi_x
         for i in range(self.layer_num):
-            if self.res is True:
-                rgb_in, hsi_in = rgb_x, hsi_x
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             if self.mode in ('c', '3'):
                 fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
             elif self.mode == 'm':
                 fusion_feature = rgb_x * hsi_x
             hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
-            hsi_x = self.fusion_activation[f'Fusion_Act_{i}'](hsi_x)
             hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
-            if self.res is True:
-                rgb_x, hsi_x = rgb_x + rgb_in, hsi_x + hsi_in
         output_hsi = self.hsi_layer.output_conv(hsi_x)
         if self.output_rgb_ch >= 1:
             output_rgb = self.rgb_layer.output_conv(rgb_x)
