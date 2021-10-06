@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision
 from colour.colorimetry import transformations
-from .layers import Base_Module
+from .layers import Base_Module, HSI_prior_block
 
 
 def normalize(data):
@@ -147,17 +147,25 @@ class HSIHSCNN(Base_Module):
         activation = kwargs.get('activation', 'relu').lower()
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': torch.nn.Conv2d(feature_num, feature_num, 3, 1, 1)
+        # self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': torch.nn.Conv2d(feature_num, feature_num, 3, 1, 1)
+        #                                            for i in range(layer_num)})
+        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': HSI_prior_block(feature_num, feature_num)
                                                    for i in range(layer_num)})
-        self.activation_layer = torch.nn.ModuleDict({f'HSI_act_{i}': self.activations[activation]()
-                                                     for i in range(layer_num)})
+        self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)
+                                              for i in range(layer_num)})
+        # self.activation_layer = torch.nn.ModuleDict({f'HSI_act_{i}': self.activations[activation]()
+        #                                              for i in range(layer_num)})
         self.output_conv = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-
         x = self.input_activation(self.input_conv(x))
-        for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
-            x = activation(layer(x))
+        # for layer, res_block in zip(self.feature_layers.values(), self.res_block.values()):
+        for layer in self.feature_layers.values():
+            x_in = x
+            x_hsi = layer(x)
+            # x_res = res_block(x)
+            # x = activation(layer(x))
+            x = x_in + x_hsi
         x = self.output_conv(x)
         return x
 
