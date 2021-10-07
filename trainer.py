@@ -64,7 +64,7 @@ class Trainer(object):
             mode = 'Val'
             desc_str = f'{mode:>5} Epoch: {epoch + 1:05d} / {epochs:05d}'
             val_show_mean = self._all_step(val_dataloader, mode=mode, desc_str=desc_str, columns=columns)
-            val_output.append(train_show_mean)
+            val_output.append(val_show_mean)
             if self.callbacks:
                 for callback in self.callbacks:
                     callback.callback(self.model, epoch, loss=train_show_mean,
