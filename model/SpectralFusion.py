@@ -599,9 +599,9 @@ class SpectralFusion(Base_Module):
         for i in range(self.layer_num):
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             fusion_feature = torch.cat((rgb_x, hsi_x), dim=1)
-            hsi_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
-            rgb_x = hsi_x
-            hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
+            fusion_x = self.fusion_layer[f'Fusion_{i}'](fusion_feature)
+            rgb_x = fusion_x
+            hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](fusion_x))
         output_hsi = self.hsi_layer.output_conv(hsi_x)
         if self.output_rgb_ch >= 1:
             output_rgb = self.rgb_layer.output_conv(rgb_x)
