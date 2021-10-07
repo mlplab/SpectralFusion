@@ -62,13 +62,22 @@ class Mish(torch.nn.Module):
 
 class RMSELoss(torch.nn.Module):
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__()
         self.mse = torch.nn.MSELoss()
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.sqrt(self.mse(x, y))
 
+
+class MSELoss(torch.nn.Module):
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        return self.mse(x, y)
 
 class SAMLoss(torch.nn.Module):
 
@@ -83,7 +92,8 @@ class SAMLoss(torch.nn.Module):
 
 class MSE_SAMLoss(torch.nn.Module):
 
-    def __init__(self, alpha: float=.5, beta: float=.5, mse_ratio: float=1., sam_ratio: float=.01) -> None:
+    def __init__(self, *args, alpha: float=.5, beta: float=.5,
+                 mse_ratio: float=1., sam_ratio: float=.01, **kwargs) -> None:
         super(MSE_SAMLoss, self).__init__()
         self.alpha = alpha
         self.beta = beta
@@ -98,8 +108,8 @@ class MSE_SAMLoss(torch.nn.Module):
 
 class FusionLoss(torch.nn.Module):
 
-    def __init__(self, rgb_base_fn: torch.nn.Module=torch.nn.MSELoss,
-                 hsi_base_fn: torch.nn.Module=torch.nn.MSELoss, *args,
+    def __init__(self, *args, rgb_base_fn: torch.nn.Module=torch.nn.MSELoss,
+                 hsi_base_fn: torch.nn.Module=torch.nn.MSELoss,
                  alpha: float=.5, **kwargs) -> None:
         super().__init__()
         self.rgb_fn = rgb_base_fn()
@@ -112,7 +122,8 @@ class FusionLoss(torch.nn.Module):
             rgb_y, hsi_y = label['rgb'], label['hsi']
         else:
             rgb_y, hsi_y = label
-        return (1. - self.hsi_alpha) * self.rgb_fn(rgb_x, rgb_y) + self.hsi_alpha * self.hsi_fn(hsi_x, hsi_y)
+        # return (1. - self.hsi_alpha) * self.rgb_fn(rgb_x, rgb_y) + self.hsi_alpha * self.hsi_fn(hsi_x, hsi_y)
+        return self.hsi_fn(hsi_x, hsi_y) + self.hsi_fn(hsi_x, hsi_y)
 
 
 # ########################## Loss Function ##########################
