@@ -460,3 +460,23 @@ class EDSR_Block(Base_Module):
         x = x + x_in
         return x
 
+
+class HSI_EDSR_Block(Base_Module):
+
+    def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
+                 activation: str='relu') -> None:
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        self.activation = self.activations[activation]()
+        self.conv2 = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
+        self.channel_conv = torch.nn.Conv2d(output_ch, output_ch, 1, 1, 0)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        x_in = x
+        x = self.conv1(x)
+        x = self.activation(x)
+        x = self.conv2(x)
+        x = x + x_in
+        x = self.channel_conv(x)
+        return x
+

@@ -9,7 +9,7 @@ import torch
 import torchvision
 from torchinfo import summary
 from colour.colorimetry import transformations
-from .layers import Base_Module, EDSR_Block
+from .layers import Base_Module, EDSR_Block, HSI_EDSR_Block
 
 
 def normalize(data):
@@ -150,7 +150,7 @@ class HSIHSCNN(Base_Module):
         activation = kwargs.get('activation', 'relu').lower()
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': EDSR_Block(feature_num, feature_num)
+        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': HSI_EDSR_Block(feature_num, feature_num)
                                                    for i in range(layer_num)})
         self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)
                                               for i in range(layer_num)})
