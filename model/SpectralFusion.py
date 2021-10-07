@@ -162,7 +162,7 @@ class HSIHSCNN(Base_Module):
         x = self.input_activation(self.input_conv(x))
         # for layer, res_block in zip(self.feature_layers.values(), self.res_block.values()):
         for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
-            x_hsi = activation(layer(x))
+            x = activation(layer(x))
         x = self.output_conv(x)
         return x
 
