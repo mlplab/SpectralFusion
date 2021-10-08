@@ -12,8 +12,8 @@ model_names=("HSCNN" "HyperReconNet" "DeepSSPrior")
 block_num=9
 concats=('False' 'True')
 loss_mode="mse"
-# start_time=$(date "+%m%d")
-start_time=1009
+start_time=$(date "+%m%d")
+# start_time=1009
 # start_time='0702'
 
 
