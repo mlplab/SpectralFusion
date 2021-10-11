@@ -31,6 +31,7 @@ parser.add_argument('--block_num', '-bn', default=3, type=int, help='Model Block
 parser.add_argument('--start_time', '-st', default='0000', type=str, help='start training time')
 parser.add_argument('--mode', '-md', default='both', type=str, help='Model Mode')
 parser.add_argument('--loss', '-l', default='mse', type=str, help='Loss Mode')
+parser.add_argument('--conv_mode', '-cm', default='normal', type=str, help='Conv Layer Mode')
 args = parser.parse_args()
 
 
@@ -48,6 +49,7 @@ model_name = args.model_name
 block_num = args.block_num
 output_mode = args.mode
 loss_mode = args.loss
+conv_mode = args.conv_mode
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -76,7 +78,7 @@ all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}_{conv_mode}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
@@ -97,7 +99,7 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
 
 
 model = HSIHSCNN(input_ch=input_ch, output_ch=31,
-                 feature_num=31, layer_num=block_num).to(device)
+                 feature_num=31, layer_num=block_num, hsi_mode=conv_mode).to(device)
 criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss,
               'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
 criterion = criterions[loss_mode]().to(device)

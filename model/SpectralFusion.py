@@ -51,7 +51,7 @@ class RGBHSCNN(Base_Module):
             self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
         rgb_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
-        ratio = kwargs.get('ratio', 2.)
+        ratio = kwargs.get('ratio', 2)
         self.feature_layers = torch.nn.ModuleDict({f'RGB_{i}': rgb_layer[rgb_mode.lower()](feature_num, feature_num, ratio=ratio)
                                                    for i in range(layer_num)})
         # self.feature_layers = torch.nn.ModuleDict({f'RGB_{i}': EDSR_Block(feature_num, feature_num)
@@ -175,7 +175,7 @@ class HSIHSCNN(Base_Module):
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
         hsi_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
-        ratio = kwargs.get('ratio', 2.)
+        ratio = kwargs.get('ratio', 2)
         self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': hsi_layer[hsi_mode.lower()](feature_num, feature_num, ratio=ratio)
                                                    for i in range(layer_num)})
         self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)

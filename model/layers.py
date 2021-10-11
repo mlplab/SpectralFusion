@@ -457,7 +457,7 @@ class Mix_SS_Layer(torch.nn.Module):
 class EDSR_Block(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 activation: str='relu') -> None:
+                 activation: str='relu', **kwargs) -> None:
         super().__init__()
         self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
@@ -475,7 +475,7 @@ class EDSR_Block(Base_Module):
 class HSI_EDSR_Block(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 activation: str='relu') -> None:
+                 activation: str='relu', **kwargs) -> None:
         super().__init__()
         self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
