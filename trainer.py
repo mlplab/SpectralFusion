@@ -163,23 +163,20 @@ class GANTrainer(Trainer):
 
     def __init__(self, Gmodel, Dmodel, Gcriterion, Dcriterion,
                  Goptim, Doptim, *args, batch_size=64, scheduler=None,
-                 callbacks=None, **kwargs):
+                 callbacks=None, device: str='cpu', evaluate_flg: bool=False, **kwargs):
 
-        super().__init__(scheduler, callbacks, **kwargs)
+        super().__init__(None, None, None, scheduler=scheduler, callbacks=callbacks, 
+                         device=device, evaluate_flg=evaluate_flg, **kwargs)
         self.Gmodel = Gmodel
         self.Gcriterion = Gcriterion
         self.Goptimizer = Goptim
         self.Dmodel = Dmodel
         self.Dcriterion = Dcriterion
         self.Doptimizer = Doptim
-        self.psnr = PSNRMetrics().eval()
-        self.sam = SAMMetrics().eval()
-        self.ssim = SSIM().eval()
-        shape = kwargs.get('shape', (64, 1))
+        shape = kwargs.get('shape', (batch_size, 1))
         self.zeros = torch.zeros(shape).to(device)
         self.ones = torch.ones(shape).to(device)
         self.fake_img_criterion = torch.nn.MSELoss().to(device)
-        self.colab_mode = kwargs.get('colab_mode', False)
 
     def train(self, epochs, train_dataloader, val_dataloader, init_epoch=None):
 
@@ -267,14 +264,14 @@ class GANTrainer(Trainer):
         step_loss, step_eval = [], []
         if mode.lower() == 'train':
             step_Dloss, step_Deval = [], []
-        with tqdm(train_dataloader, desc=desc_str, ncols=columns, unit='step', ascii=True) as pbar:
+        with tqdm(dataloader, desc=desc_str, ncols=columns, unit='step', ascii=True) as pbar:
             for i, (inputs, labels) in enumerate(pbar):
                 inputs = self._trans_data(inputs)
                 labels = self._trans_data(labels)
                 if mode.lower() == 'train':
-                    loss, output, loss = self._step_G(inputs, labels)
+                    Gloss, output, loss = self._step_G(inputs, labels)
                     Dloss = self._step_D(inputs, labels)
-                elif mode.lower == 'val':
+                elif mode.lower() == 'val':
                     with torch.no_grad():
                         loss, output = self.predict(inputs, labels)
                 step_loss.append(loss.item())
@@ -286,7 +283,7 @@ class GANTrainer(Trainer):
                     step_Dloss.append(Dloss.item())
                     show_Dloss = np.mean(step_Dloss)
                     self._step_show(pbar, Loss=f'{show_loss:.5f}', DLoss=f'{show_Dloss:.5f}', Evaluate=evaluate)
-                elif mode.lower == 'val':
+                elif mode.lower() == 'val':
                     self._step_show(pbar, Loss=f'{show_loss:.5f}', Evaluate=evaluate)
                 torch.cuda.empty_cache()
         show_mean = np.insert(show_mean, 0, show_loss)
@@ -296,8 +293,10 @@ class GANTrainer(Trainer):
 class RefineTrainer(Trainer):
 
     def __init__(self, model, criterion, optimizer, reconst_model,
-                 scheduler=None, callbacks=None, **kwargs):
-        super().__init__(model, criterion, optimizer, scheduler, callbacks, **kwargs)
+                 scheduler=None, callbacks=None, device: str='cpu', 
+                 evaluate_flg: bool=False, **kwargs):
+        super().__init__(model, criterion, optimizer, scheduler=scheduler, callbacks=callbacks, 
+                         device=device, evaluate_flg=evaluate_flg, **kwargs)
         self.reconst_model = reconst_model.eval()
 
     def _step(self, inputs, labels, train=True):
