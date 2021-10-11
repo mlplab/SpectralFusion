@@ -487,7 +487,7 @@ class SpectralFusion_OnlyRes(Base_Module):
             return output_hsi
 
 
-class SpectralFusionShare(SpectralFusion):
+class SpectralFusionShare(Base_Module):
 
     def __init__(self, input_hsi_ch: int, input_rgb_ch: int, output_hsi_ch: int,
                  output_rgb_ch: int, *args, rgb_feature: int=64, hsi_feature: int=64,
