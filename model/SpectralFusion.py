@@ -496,6 +496,7 @@ class SpectralFusionShare(SpectralFusion):
         super().__init__()
         activation = kwargs.get('activation', 'relu')
         ratio = kwargs.get('ratio', 2)
+        rgb_ratio = kwargs.get('rgb_ratio', 2)
         rgb_mode = kwargs.get('rgb_mode', 'normal')
         hsi_mode = kwargs.get('hsi_mode', 'normal')
         ghost_mode = kwargs.get('ghost_mode', 'mix3')
@@ -516,7 +517,7 @@ class SpectralFusionShare(SpectralFusion):
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 3, 1, 1)
                                                      for i in range(layer_num)})
         elif mode == 's': # separate rgb and hsi feature
-            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': RGBFusion(rgb_feature, hsi_feature, fusion_feature, ratio=ratio)
+            self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': RGBFusion(rgb_feature, hsi_feature, fusion_feature, ratio=rgb_ratio)
                                                     for i in range(layer_num)})
         self.fusion_activation = torch.nn.ModuleDict({f'Fusion_Act_{i}': self.activations[activation]()
                                                       for i in range(layer_num)})
