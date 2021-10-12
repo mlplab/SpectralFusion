@@ -300,7 +300,6 @@ class SpectralFusion(Base_Module):
         ratio = kwargs.get('ratio', 2)
         rgb_mode = kwargs.get('rgb_mode', 'normal')
         hsi_mode = kwargs.get('hsi_mode', 'normal')
-        ghost_mode = kwargs.get('ghost_mode', 'mix3')
         self.input_rgb_ch = input_rgb_ch
         self.output_rgb_ch = output_rgb_ch
         self.output_hsi_ch = output_hsi_ch
