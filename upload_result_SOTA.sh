@@ -37,15 +37,17 @@ for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
     for concat in $concats; do
-        for model_name in $model_names; do
+        for base_model_name in $model_names; do
             echo $dataset $concat $loss_mode $model_name
 
             name_block_num=$(printf %02d $block_num)
-            model_name=$model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
-            mkdir ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-            cp ../SCI_result/$dataset\_sota_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-            skicka upload ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
-            skicka upload ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
+            model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            mkdir -p ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload
+            cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name\_output.csv ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
+            cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar
+            skicka upload ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
+            rm -rf ../SCI/result/$dataset\_sota/$upload_model_name
         done
     done
 done

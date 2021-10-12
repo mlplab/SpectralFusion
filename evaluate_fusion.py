@@ -33,6 +33,7 @@ parser.add_argument('--block_num', '-bn', default=3, type=int, help='Model Block
 parser.add_argument('--start_time', '-st', default='0000', type=str, help='start training time')
 parser.add_argument('--mode', '-md', default='both', type=str, help='Model Mode')
 parser.add_argument('--loss', '-l', default='fusion', type=str, help='Loss Mode')
+parser.add_argument('--conv_mode', '-cm', default='normal', type=str, help='Conv Layer Mode')
 args = parser.parse_args()
 
 
@@ -50,6 +51,7 @@ model_name = args.model_name
 block_num = args.block_num
 output_mode = args.mode
 loss_mode = args.loss
+conv_mode = args.conv_mode
 
 
 device = 'cpu'
@@ -74,10 +76,7 @@ loss_mode = mode[output_mode][2]
 input_rgb, output_rgb = mode[output_mode][3:]
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}'
-# if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
-#     print(f'already trained {save_model_name}')
-#     sys.exit(0)
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
 
 
 model_names = os.listdir(sota_path)
@@ -108,7 +107,8 @@ test_dataset = SpectralFusionEvalDataset(test_path, mask_path,
 model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
                        output_rgb_ch=output_rgb, output_hsi_ch=31,
                        rgb_feature=31, hsi_feature=31, fusion_feature=31,
-                       layer_num=block_num).to(device)
+                       layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode).to(device)
+
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),

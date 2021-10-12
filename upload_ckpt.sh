@@ -14,6 +14,6 @@ do
     esac
 done
 
-zsh upload_result_hsi.sh -s $start_time
-zsh upload_result_fusion.sh -s $start_time
+# zsh upload_result_hsi.sh -s $start_time
+# zsh upload_result_fusion.sh -s $start_time
 zsh upload_result_SOTA.sh -s $start_time
