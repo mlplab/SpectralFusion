@@ -215,3 +215,52 @@ class ReconstEvaluater(Evaluater):
         else:
             data = data.unsqueeze(0).to(device)
         return data
+
+
+class ReconstRGB(ReconstEvaluater):
+
+    def metrics(self, model: torch.nn.Module, dataset: torch.utils.data.Dataset,
+                evaluate_fn,
+                header=None, colab_mode: bool=False) -> None:
+        model.eval()
+        output_evaluate = []
+        if colab_mode is False:
+            _, columns = os.popen('stty size', 'r').read().split()
+            columns = int(columns)
+        else:
+            columns = 200
+        with torch.no_grad():
+            with tqdm(dataset, ncols=columns, ascii=True) as pbar:
+                for i, (idx, inputs, labels) in enumerate(pbar):
+                    evaluate_list = []
+                    inputs = self._trans_data(inputs)
+                    labels = self._trans_data(labels)
+                    if isinstance(inputs, (list, tuple)):
+                        output = model(*inputs)
+                    elif isinstance(inputs, (dict)):
+                        output = model(**inputs)
+                    else:
+                        output = model(inputs)
+                    if isinstance(output, (list, tuple)):
+                        output = output[0]
+                    if isinstance(inputs, (list, tuple)):
+                        inputs = inputs[0]
+                    elif isinstance(inputs, (dict)):
+                        inputs = inputs['rgb']
+                    if isinstance(labels, (list, tuple)):
+                        labels = labels[0]
+                    elif isinstance(labels, (dict)):
+                        labels = labels['rgb']
+                    metrics_output = torch.clamp(output, min=0., max=1.)
+                    metrics_labels = torch.clamp(labels, min=0., max=1.)
+                    for metrics_func in evaluate_fn:
+                        metrics = metrics_func(metrics_output, metrics_labels)
+                        evaluate_list.append(f'{metrics.item():.7f}')
+                    output_evaluate.append(evaluate_list)
+                    show_evaluate = np.mean(np.array(output_evaluate, dtype=np.float32), axis=0)
+                    self._step_show(pbar, Metrics=show_evaluate)
+                    del show_evaluate
+                    self._save_all(i, inputs, output, labels)
+                    self._save_mat(i, idx, output)
+        self._save_csv(output_evaluate, header)
+        return self
