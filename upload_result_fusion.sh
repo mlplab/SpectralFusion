@@ -11,7 +11,8 @@ datasets=("CAVE" "Harvard")
 base_model_name="SpectralFusion"
 block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
 concats=('False' 'True')
-modes=("inputOnly")
+mode=("inputOnly")
+conv_modes=("normal" "edsr" "ghost")
 loss_modes=("fusion" "fusion" "mse")
 start_time=$(date "+%m%d")
 # start_time='0915'
@@ -40,10 +41,10 @@ for dataset in $datasets; do
     for block_num in $block_nums; do
         for concat in $concats; do
             i=1
-            for mode in $modes; do
+            for conv_mode in $conv_modes; do
 
                 name_block_num=$(printf %02d $block_num)
-                model_name=$base_model_name\_$name_block_num\_${loss_modes[$i]}\_$mode\_$start_time\_$concat
+                model_name=$base_model_name\_$name_block_num\_${loss_modes[$i]}\_$mode\_$start_time\_$concat\_$conv_mode
                 mkdir ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/$model_name\_output.csv
                 cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/

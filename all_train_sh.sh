@@ -20,4 +20,4 @@ done
 
 # zsh create_SOTA.sh -s $start_time
 zsh create_fusion.sh -s $start_time -e $train_epoch
-# zsh create_hsiOnly.sh -s $start_time -e $train_epoch
+zsh create_hsiOnly.sh -s $start_time -e $train_epoch

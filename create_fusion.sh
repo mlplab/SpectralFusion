@@ -9,7 +9,7 @@ batch_size=64
 train_epoch=150
 datasets=("CAVE")
 base_model_name="SpectralFusion"
-block_nums=(1 2 3 4 5 6 7)
+block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
 concats=('False')
 modes=("inputOnly")
 conv_modes=("normal" "edsr" "ghost")
@@ -35,12 +35,12 @@ do
 done
 
 
+i=1
 for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SpectralFusion
     for block_num in $block_nums; do
         for concat in $concats; do
-            i=1
             for mode in $modes; do
                 for conv_mode in $conv_modes; do
                     python train_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i] -cm $conv_mode
@@ -52,7 +52,6 @@ for dataset in $datasets; do
                     cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/$model_name\_output.csv
                     cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/
                     skicka upload ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SpectralFusion/$model_name/
-                    let i++
                 done
             done
         done
