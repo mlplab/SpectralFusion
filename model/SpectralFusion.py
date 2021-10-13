@@ -325,10 +325,10 @@ class SpectralFusion(Base_Module):
     def forward(self, rgb: torch.Tensor, hsi: torch.Tensor) -> (torch.Tensor, torch.Tensor):
 
         hsi_x = self.hsi_layer.input_activation(self.hsi_layer.input_conv(hsi))
-        if self.input_rgb_ch >= 1:
+        if self.input_rgb_ch > 1:
             rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(rgb))
         else:
-            rgb_x = hsi_x
+            rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(hsi))
         for i in range(self.layer_num):
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             if self.mode == 's':
