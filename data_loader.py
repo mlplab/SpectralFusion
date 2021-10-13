@@ -129,14 +129,11 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
         if self.rgb_input:
             rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
-            rgb_input = torch.empty_like(measurement_data)
+            rgb_input = measurement_data
         if self.rgb_label:
             rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
-            rgb_label = torch.empty_like(measurement_data)
-        if self.rgb_encode:
-            rgb_input = measurement_data
-            rgb_label = torch.empty_like(rgb_input)
+            rgb_label = measurement_data
 
         input_data = {'hsi': hsi_data}
         label_data = {'hsi': hsi_label}
@@ -234,7 +231,7 @@ class RGBPreTrainDataloader(torch.utils.data.Dataset):
         mask = sio.loadmat(os.path.join(self.mask_path, f'mask_{patch_id}.mat'))[self.data_key]
         mask = self.mask_transforms(mask)
         measurement_data = (trans_data * mask).sum(dim=0, keepdim=True)
-        label_data = nd_data[self.rgb_ch[self.data_name]]
+        label_data = nd_data[self.rgb_ch[self.data_name], :, :]
 
         if self.concat is True:
             input_data = torch.cat([measurement_data, mask], dim=0)
@@ -264,7 +261,7 @@ class RGBPreTrainEvalDataloader(RGBPreTrainDataloader):
         mask = sio.loadmat(os.path.join(self.mask_path, f'mask_{patch_id}.mat'))[self.data_key]
         mask = self.mask_transforms(mask)
         measurement_data = (trans_data * mask).sum(dim=0, keepdim=True)
-        label_data = nd_data[self.rgb_ch[self.data_name]]
+        label_data = nd_data[self.rgb_ch[self.data_name], :, :]
 
         if self.concat is True:
             input_data = torch.cat([measurement_data, mask], dim=0)
@@ -311,7 +308,7 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
         mask = sio.loadmat(os.path.join(self.mask_path, f'mask_{patch_id}.mat'))[self.data_key]
         mask = self.mask_transforms(mask)
         measurement_data = (trans_data * mask).sum(dim=0, keepdim=True)
-        label_data = nd_data
+        label_data = trans_data
 
         if self.concat is True:
             input_data = torch.cat([measurement_data, mask], dim=0)
@@ -341,7 +338,7 @@ class RGBTrainEvalDataloader(RGBPreTrainDataloader):
         mask = sio.loadmat(os.path.join(self.mask_path, f'mask_{patch_id}.mat'))[self.data_key]
         mask = self.mask_transforms(mask)
         measurement_data = (trans_data * mask).sum(dim=0, keepdim=True)
-        label_data = nd_data
+        label_data = trans_data
 
         if self.concat is True:
             input_data = torch.cat([measurement_data, mask], dim=0)
