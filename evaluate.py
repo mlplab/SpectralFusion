@@ -258,3 +258,50 @@ class ReconstRGB(ReconstEvaluater):
                     self._save_mat(i, idx, output)
         self._save_csv(output_evaluate, header)
         return self
+
+    def _save_all(self, i: int, inputs: torch.Tensor, outputs: torch.Tensor, labels: torch.Tensor) -> None:
+        save_alls_path = 'save_all'
+        _, c, h, w = outputs.size()
+        diff = torch.abs(outputs - labels).squeeze().numpy()
+        diff = diff.transpose(1, 2, 0).mean(axis=-1)
+        diff = normalize(diff)
+        inputs = normalize(inputs.squeeze().numpy())
+        outputs = outputs.squeeze().numpy().transpose(1, 2, 0)
+        outputs = normalize(outputs)
+        labels = labels.squeeze().numpy().transpose(1, 2, 0)
+        labels = normalize(labels)
+        fig_num = 4
+        plt.figure(figsize=(16, 9))
+        ax = plt.subplot(1, 4, 1)
+        if inputs.shape[0] == 32:
+            inputs = inputs[0]
+        ax.imshow(inputs)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        ax.set_title('input')
+        figs = [outputs, labels]
+        titles = ['output', 'label']
+        for j, (fig, title) in enumerate(zip(figs, titles)):
+            ax = plt.subplot(1, fig_num, j + 2)
+            self._plot_img(ax, fig, title)
+        ax = plt.subplot(1, fig_num, fig_num)
+        self._plot_img(ax, diff, title='diff', colorbar=True)
+        plt.tight_layout()
+        plt.savefig(os.path.join(self.save_alls_path, f'output_alls_{i}.png'), bbox_inches='tight')
+        plt.close()
+        return self
+
+    def _save_mat(self, i: int, idx: int, output: torch.Tensor) -> None:
+        output_mat = output.squeeze().to('cpu').detach().numpy().copy()
+        output_mat = output_mat.transpose(1, 2, 0)
+        scipy.io.savemat(os.path.join(self.save_mat_path, f'{i:05d}.mat'), {'data': output_mat, 'idx': idx})
+        return self
+
+    def _save_csv(self, output_evaluate: list, header: list) -> None:
+        output_evaluate_np = np.array(output_evaluate, dtype=np.float32)
+        means = list(np.mean(output_evaluate_np, axis=0))
+        output_evaluate.append(means)
+        output_evaluate_csv = pd.DataFrame(output_evaluate)
+        output_evaluate_csv.to_csv(self.save_csv_path, header=header)
+        print(means)
+        return self
