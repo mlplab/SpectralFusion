@@ -288,6 +288,8 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
         self.data_name = data_name
         self.load_mode = load_mode
         # self.return_mode = return_mode
+        self.rgb_input = rgb_input
+        self.rgb_label = rgb_label
         self.rgb_ch = {'CAVE': (26, 16, 9),
                        'Harvard': (26, 16, 9),
                        'ICVL': (26, 16, 9)}
@@ -311,16 +313,32 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
         label_data = trans_data
 
         if self.concat is True:
-            input_data = torch.cat([measurement_data, mask], dim=0)
+            hsi_data = torch.cat([measurement_data, mask], dim=0)
         else:
-            input_data = measurement_data
+            hsi_data = measurement_data
+        hsi_label = trans_data
+
+        if self.rgb_input:
+            rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
+        else:
+            rgb_input = measurement_data
+        if self.rgb_label:
+            rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
+        else:
+            rgb_label = measurement_data
+            
+        input_data = {'hsi': hsi_data}
+        label_data = {'hsi': hsi_label}
+        input_data['rgb'] = rgb_input
+        label_data['rgb'] = rgb_label
+
         return input_data, label_data
 
     def __len__(self):
         return self.data_len
 
 
-class RGBTrainEvalDataloader(RGBPreTrainDataloader):
+class RGBTrainEvalDataloader(RGBTrainDataloader):
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]
@@ -341,7 +359,23 @@ class RGBTrainEvalDataloader(RGBPreTrainDataloader):
         label_data = trans_data
 
         if self.concat is True:
-            input_data = torch.cat([measurement_data, mask], dim=0)
+            hsi_data = torch.cat([measurement_data, mask], dim=0)
         else:
-            input_data = measurement_data
+            hsi_data = measurement_data
+        hsi_label = trans_data
+
+        if self.rgb_input:
+            rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
+        else:
+            rgb_input = measurement_data
+        if self.rgb_label:
+            rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
+        else:
+            rgb_label = measurement_data
+
+        input_data = {'hsi': hsi_data}
+        label_data = {'hsi': hsi_label}
+        input_data['rgb'] = rgb_input
+        label_data['rgb'] = rgb_label
+
         return self.data[idx], input_data, label_data
