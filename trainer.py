@@ -95,6 +95,8 @@ class Trainer(object):
                 output = self.model(**inputs)
             else:
                 output = self.model(inputs)
+            if isinstance(output, (list, tuple)):
+                output = output[-1]
             if isinstance(labels, dict) and isinstance(output, torch.Tensor):
                 labels = labels['hsi']
             loss = self.criterion(output, labels)
