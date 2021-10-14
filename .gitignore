@@ -19,3 +19,5 @@
 *.pkl
 __pycache__/
 test_load_model.py
+# ignore tensorboard output
+runs/
