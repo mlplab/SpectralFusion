@@ -57,7 +57,7 @@ class PSNRMetrics(torch.nn.Module):
         self.criterion = torch.nn.MSELoss().eval()
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        return 10. * torch.log10(1. / self.criterion(x, y))
+        return 10. * torch.log10(y.max() ** 2 / self.criterion(x, y))
 
 
 class SAMMetrics(torch.nn.Module):
