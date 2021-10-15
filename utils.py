@@ -32,7 +32,7 @@ def calc_filter(img: np.ndarray, filter: np.ndarray) -> np.ndarray:
 
 
 def make_patch(data_path: str, save_path: str, size: int=256, step: int=256,
-               ch: int=24, data_key: str='data') -> None:
+               ch: int=24, data_key: str='data', norm: bool=True) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -44,7 +44,8 @@ def make_patch(data_path: str, save_path: str, size: int=256, step: int=256,
         idx = name.split('.')[0]
         f = scipy.io.loadmat(os.path.join(data_path, name))
         data = f[data_key]
-        data = normalize(data)
+        if norm:
+            data = normalize(data)
         data = np.expand_dims(np.array(data, np.float32).transpose([2, 0, 1]), axis=0)
         tensor_data = torch.as_tensor(data)
         patch_data = tensor_data.unfold(2, size, step).unfold(3, size, step)
@@ -58,7 +59,8 @@ def make_patch(data_path: str, save_path: str, size: int=256, step: int=256,
 
 
 def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=256,
-                    step: int=256, ch: int=31, data_key: str='data', load_mode: str='mat') -> None:
+                    step: int=256, ch: int=31, data_key: str='data', load_mode: str='mat',
+                    norm: bool=True) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -75,7 +77,8 @@ def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=2
             elif load_mode == 'h5':
                 data = h5py.File(os.path.join(data_path, name), 'r')
                 data = np.array(data[data_key]).transpose(1, 2, 0)[::-1, :, :]
-            data = normalize(data)
+            if norm:
+                data = normalize(data)
             data = np.expand_dims(np.array(data, np.float32).transpose([2, 0, 1]), axis=0)
             tensor_data = torch.as_tensor(data)
             patch_data = tensor_data.unfold(2, size, step).unfold(3, size, step)
@@ -97,7 +100,7 @@ def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=2
 
 
 def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256,
-                    ch: int=24, data_key: str='data') -> None:
+                    ch: int=24, data_key: str='data', norm: bool=True) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -111,6 +114,8 @@ def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256
         print(os.path.join(data_path, name))
         data = h5py.File(os.path.join(data_path, name), 'r')
         data = np.array(data[data_key]).transpose((1, 2, 0))
+        if norm:
+            data = normalize(data)
         data = normalize(data)
         data = np.expand_dims(np.array(data[::-1, :, :], np.float32).transpose([2, 0, 1]), axis=0)
         tensor_data = torch.as_tensor(data)
@@ -128,7 +133,7 @@ def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256
 
 def make_patch_h5py_list(data_path: str, data_list: list, save_path: str,
                          size: int=256, step: int=256, ch: int=24,
-                         data_key: str='data') -> None:
+                         data_key: str='data', norm: bool=True) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -142,7 +147,8 @@ def make_patch_h5py_list(data_path: str, data_list: list, save_path: str,
             # f = scipy.io.loadmat(os.path.join(data_path, name))
             data = h5py.File(os.path.join(data_path, name), 'r')
             data = np.array(data[data_key]).transpose((1, 2, 0))
-            data = normalize(data)
+            if norm:
+                data = normalize(data)
             data = np.expand_dims(np.array(data[::-1, :, :], np.float32).transpose([2, 0, 1]), axis=0)
             tensor_data = torch.as_tensor(data)
             patch_data = tensor_data.unfold(2, size, step).unfold(3, size, step)
