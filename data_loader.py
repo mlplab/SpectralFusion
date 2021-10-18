@@ -212,7 +212,7 @@ class SingleDataset(torch.utils.data.Dataset):
         self.rgb_input = rgb_input
         self.rgb_label = rgb_label
         self.rgb_ch = {'CAVE': 0,
-                       'Harvard': 0
+                       'Harvard': 0,
                        'ICVL': 0}
 
     def __getitem__(self, idx: int) -> (dict, dict):
@@ -236,7 +236,7 @@ class SingleDataset(torch.utils.data.Dataset):
             input_data = torch.cat([measurement_data, mask], dim=0)
         else:
             input_data = measurement_data
-        label_data = trans_data[self.rgb_ch[self.data_name], :, :]
+        label_data = trans_data[self.rgb_ch[self.data_name], :, :].unsqueeze(0)
 
         return input_data, label_data
 
@@ -265,7 +265,7 @@ class SingleEvalDataset(SingleDataset):
             input_data = torch.cat([measurement_data, mask], dim=0)
         else:
             input_data = measurement_data
-        label_data = trans_data[self.rgb_ch[self.data_name], :, :]
+        label_data = trans_data[self.rgb_ch[self.data_name], :, :].unsqueeze(0)
 
         return self.data[idx], input_data, label_data
 
