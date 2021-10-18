@@ -44,6 +44,7 @@ class RGBHSCNN(Base_Module):
                  layer_num: int=3, rgb_mode='normal', **kwargs) -> None:
         super().__init__()
         activation = kwargs.get('activation', 'relu').lower()
+        self.res = kwargs.get('res', False)
         self.output_ch = output_ch
         if input_ch == 0:
             self.input_conv = torch.nn.Identity()
@@ -63,8 +64,12 @@ class RGBHSCNN(Base_Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         x = self.input_activation(self.input_conv(x))
+        if self.res is True:
+            x_in = x
         for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
             x = activation(layer(x))
+        if self.res is True:
+            x = x_in + x
         x = self.output_conv(x)
         return x
 
@@ -75,12 +80,16 @@ class RGBHSCNN(Base_Module):
         x_in = x
         if 'start_rgb_conv' in pick_layer:
             return_features['start_rgb_conv'] = x_in
+        if self.res is True:
+            x_in = x
         x = self.input_activation(x)
         for (layer_name, layer), (activation_name, activation) in zip(self.feature_layers.items(), self.activation_layer.items()):
             x = layer(x)
             if activation_name in pick_layer:
                 return_features[activation_name] = x
             x = activation(x)
+        if self.res is True:
+            x_in = x
         '''
         if self.residual:
             output = self.residual_conv(x) + x_in
@@ -176,6 +185,7 @@ class HSIHSCNN(Base_Module):
         self.input_activation = self.activations[activation]()
         hsi_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
         ratio = kwargs.get('ratio', 2)
+        self.res = kwargs.get('res', False)
         self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': hsi_layer[hsi_mode.lower()](feature_num, feature_num, ratio=ratio)
                                                    for i in range(layer_num)})
         self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)
@@ -187,8 +197,12 @@ class HSIHSCNN(Base_Module):
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x = self.input_activation(self.input_conv(x))
         # for layer, res_block in zip(self.feature_layers.values(), self.res_block.values()):
+        if self.res is True:
+            x_in = x
         for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
             x = activation(layer(x))
+        if self.res is True:
+            x_in = x
         x = self.output_conv(x)
         return x
 
@@ -308,9 +322,9 @@ class SpectralFusion(Base_Module):
         self.res = res
         self.mode = mode
         self.rgb_layer = RGBHSCNN(input_rgb_ch, output_rgb_ch, feature_num=rgb_feature,
-                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio)
+                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio, res=res)
         self.hsi_layer = HSIHSCNN(input_hsi_ch, output_hsi_ch, feature_num=hsi_feature,
-                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio)
+                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio, res=res)
         if mode == 'c': # Normal Concatenate
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
                                                      for i in range(layer_num)})
@@ -330,6 +344,8 @@ class SpectralFusion(Base_Module):
             rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(rgb))
         else:
             rgb_x = hsi_x
+        if self.res is True:
+            rgb_in, hsi_in = rgb_x, hsi_x
         for i in range(self.layer_num):
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             if self.mode == 's':
@@ -340,6 +356,8 @@ class SpectralFusion(Base_Module):
             # rgb_x, hsi_x = fusion_feature, fusion_feature
             hsi_x = fusion_feature
             hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
+        if self.res is True:
+            rgb_x, hsi_x = rgb_x + rgb_in, hsi_x + hsi_in
         output_hsi = self.hsi_layer.output_conv(hsi_x)
         if self.output_rgb_ch >= 1:
             output_rgb = self.rgb_layer.output_conv(rgb_x)
