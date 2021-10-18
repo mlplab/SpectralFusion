@@ -80,7 +80,8 @@ class Evaluater(object):
         self.save_alls_path = save_img_path
         self.save_mat_path = save_mat_path
         self.save_csv_path = save_csv_path
-        self.output_ch = {'CAVE': (26, 16, 9), 'Harvard': (26, 16, 9), 'ICVL': (26, 16, 9)}
+        self.output_ch = kwargs.get('output_ch', (26, 16, 9))
+        # self.output_ch = {'CAVE': (26, 16, 9), 'Harvard': (26, 16, 9), 'ICVL': (26, 16, 9)}
         os.makedirs(self.save_alls_path, exist_ok=True)
         os.makedirs(save_mat_path, exist_ok=True)
 
@@ -101,14 +102,15 @@ class Evaluater(object):
     def _save_all(self, i: int, inputs: torch.Tensor, outputs: torch.Tensor, labels: torch.Tensor) -> None:
         save_alls_path = 'save_all'
         _, c, h, w = outputs.size()
-        diff = torch.abs(outputs - labels).squeeze().numpy()
+        diff = torch.abs(outputs - labels).squeeze(0).numpy()
+        # diff = torch.abs(outputs - labels).numpy()
         diff = diff.transpose(1, 2, 0).mean(axis=-1)
         diff = normalize(diff)
-        inputs = normalize(inputs.squeeze().numpy())
-        outputs = outputs.squeeze().numpy().transpose(1, 2, 0)
-        outputs = normalize(outputs[:, :, self.output_ch[self.data_name]])
-        labels = labels.squeeze().numpy().transpose(1, 2, 0)
-        labels = normalize(labels[:, :, self.output_ch[self.data_name]])
+        inputs = normalize(inputs.squeeze(0).numpy())
+        outputs = outputs.squeeze(0).numpy().transpose(1, 2, 0)
+        outputs = normalize(outputs[:, :, self.output_ch])
+        labels = labels.squeeze(0).numpy().transpose(1, 2, 0)
+        labels = normalize(labels[:, :, self.output_ch])
         fig_num = 4
         plt.figure(figsize=(16, 9))
         ax = plt.subplot(1, 4, 1)
@@ -131,7 +133,7 @@ class Evaluater(object):
         return self
 
     def _save_mat(self, i: int, idx: int, output: torch.Tensor) -> None:
-        output_mat = output.squeeze().to('cpu').detach().numpy().copy()
+        output_mat = output.squeeze(0).to('cpu').detach().numpy().copy()
         output_mat = output_mat.transpose(1, 2, 0)
         scipy.io.savemat(os.path.join(self.save_mat_path, f'{i:05d}.mat'), {'data': output_mat, 'idx': idx})
         return self
