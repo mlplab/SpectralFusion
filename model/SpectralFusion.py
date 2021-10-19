@@ -9,6 +9,7 @@ import torch
 import torchvision
 from torchinfo import summary
 from colour.colorimetry import transformations
+from .LowRankTensor import CPModule
 from .layers import Base_Module, EDSR_Block, HSI_EDSR_Block, Ghost_Mix, Conv2d
 
 
@@ -41,18 +42,18 @@ class RGBFusion(torch.nn.Module):
 class RGBHSCNN(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 layer_num: int=3, rgb_mode='normal', **kwargs) -> None:
+            layer_num: int=3, rgb_mode='normal', rank: int=3, **kwargs) -> None:
         super().__init__()
         activation = kwargs.get('activation', 'relu').lower()
         self.output_ch = output_ch
         if input_ch == 0:
-            self.input_conv = torch.nn.Identity()
+            self.input_conv = torch.nn.Conv2d(input_ch + 1, feature_num, 3, 1, 1)
         else:
             self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        rgb_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
+        rgb_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix, 'cp': CPModule}
         ratio = kwargs.get('ratio', 2)
-        self.feature_layers = torch.nn.ModuleDict({f'RGB_{i}': rgb_layer[rgb_mode.lower()](feature_num, feature_num, ratio=ratio)
+        self.feature_layers = torch.nn.ModuleDict({f'RGB_{i}': rgb_layer[rgb_mode.lower()](feature_num, feature_num, ratio=ratio, rank=rank, data_type='RGB')
                                                    for i in range(layer_num)})
         # self.feature_layers = torch.nn.ModuleDict({f'RGB_{i}': EDSR_Block(feature_num, feature_num)
         #                                            for i in range(layer_num)})
@@ -168,15 +169,15 @@ class RGBHSCNN(Base_Module):
 class HSIHSCNN(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 layer_num: int=3, hsi_mode='normal', **kwargs) -> None:
+                 layer_num: int=3, hsi_mode='normal', rank=3, **kwargs) -> None:
         super().__init__()
         self.output_ch = output_ch
         activation = kwargs.get('activation', 'relu').lower()
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        hsi_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
+        hsi_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix, 'cp': CPModule}
         ratio = kwargs.get('ratio', 2)
-        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': hsi_layer[hsi_mode.lower()](feature_num, feature_num, ratio=ratio)
+        self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': hsi_layer[hsi_mode.lower()](feature_num, feature_num, ratio=ratio, rank=rank, data_type='HSI')
                                                    for i in range(layer_num)})
         self.res_block = torch.nn.ModuleDict({f'HSI_Res_{i}': torch.nn.Conv2d(feature_num, feature_num, 1, 1, 0)
                                               for i in range(layer_num)})
@@ -301,6 +302,7 @@ class SpectralFusion(Base_Module):
         rgb_mode = kwargs.get('rgb_mode', 'normal')
         hsi_mode = kwargs.get('hsi_mode', 'normal')
         ghost_mode = kwargs.get('ghost_mode', 'mix3')
+        rank = kwargs.get('rank', 3)
         self.input_rgb_ch = input_rgb_ch
         self.output_rgb_ch = output_rgb_ch
         self.output_hsi_ch = output_hsi_ch
@@ -308,9 +310,9 @@ class SpectralFusion(Base_Module):
         self.res = res
         self.mode = mode
         self.rgb_layer = RGBHSCNN(input_rgb_ch, output_rgb_ch, feature_num=rgb_feature,
-                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio)
+                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio, rank=rank)
         self.hsi_layer = HSIHSCNN(input_hsi_ch, output_hsi_ch, feature_num=hsi_feature,
-                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio)
+                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio, rank=rank)
         if mode == 'c': # Normal Concatenate
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
                                                      for i in range(layer_num)})
@@ -329,7 +331,7 @@ class SpectralFusion(Base_Module):
         if self.input_rgb_ch >= 1:
             rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(rgb))
         else:
-            rgb_x = hsi_x
+            rgb_x = self.rgb_layer.input_activation(self.rgb_layer.input_conv(hsi))
         for i in range(self.layer_num):
             rgb_x = self.rgb_layer.activation_layer[f'RGB_act_{i}'](self.rgb_layer.feature_layers[f'RGB_{i}'](rgb_x))
             if self.mode == 's':
