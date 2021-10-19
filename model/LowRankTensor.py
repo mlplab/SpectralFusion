@@ -34,12 +34,13 @@ class CPdecomposition(Base_Module):
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
-        xx = self.gap['GAP_h'](x)
         h_feature = self.sig['Sig_h'](self.conv['Conv_h'](self.gap['GAP_h'](x)))
         w_feature = self.sig['Sig_w'](self.conv['Conv_w'](self.gap['GAP_w'](x)))
         c_feature = self.sig['Sig_c'](self.conv['Conv_c'](self.gap['GAP_c'](x)))
-        hw_feature = torch.kron(h_feature, w_feature)
-        output_feature = torch.kron(hw_feature, c_feature)
+        hw_feature = torch.matmul(h_feature, w_feature)
+        hw_feature = hw_feature.reshape(hw_feature.shape[0], hw_feature.shape[1], -1)
+        output_feature = torch.matmul(c_feature, hw_feature)
+        output_feature = output_feature.reshape(x.shape)
         return output_feature
 
 
@@ -94,7 +95,7 @@ class DecodingConv(Base_Module):
 
         super().__init__()
         activation = kwargs.get('activation', 'relu')
-        self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        self.conv1 = torch.nn.Conv2d(input_ch, output_ch, 3, 1, 1)
         self.activation = self.activations[activation]()
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
