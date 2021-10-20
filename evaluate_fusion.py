@@ -74,6 +74,7 @@ os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 loss_mode = mode[output_mode][2]
 input_rgb, output_rgb = mode[output_mode][3:]
+input_rgb = input_ch
 
 
 save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
