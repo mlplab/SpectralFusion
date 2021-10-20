@@ -109,7 +109,6 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
 #                        rgb_feature=31, hsi_feature=31, fusion_feature=31,
 #                        layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode).to(device)
 model = RGBHSCNN(input_rgb, output_rgb, feature_num=31, layer_num=block_num, rgb_mode=conv_mode).to(device)
-print(model)
 
 
 # summary_input = {'both': ((1, input_rgb, 48, 48), (1, input_ch, 48, 48)),
