@@ -175,7 +175,7 @@ class SpectralFusionEvalDataset(SpectralFusionDataset):
         if self.rgb_input:
             rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
-            rgb_input = torch.empty_like(measurement_data)
+            rgb_input = hsi_data
         if self.rgb_label:
             rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
