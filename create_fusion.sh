@@ -9,7 +9,7 @@ batch_size=64
 train_epoch=150
 datasets=("CAVE")
 base_model_name="SpectralFusion"
-block_nums=(3)
+block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
 concats=('False' 'True')
 modes=("inputOnly")
 conv_modes=("cp")
@@ -43,6 +43,7 @@ for dataset in $datasets; do
         for concat in $concats; do
             for mode in $modes; do
                 for conv_mode in $conv_modes; do
+                    echo $concat
                     python train_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i] -cm $conv_mode
                     python evaluate_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_modes[$i] -cm $conv_mode
 

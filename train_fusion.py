@@ -58,7 +58,7 @@ if device == 'cuda':
 
 
 mode = {'both': [True, True, 'fusion', 3, 3],
-        'inputOnly': [False, True, 'fusion', 0, 3],
+        'inputOnly': [False, True, 'fusion', 1, 3],
         'outputOnly': [True, False, 'mse', 3, 0]}
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
@@ -80,6 +80,7 @@ os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 loss_mode = mode[output_mode][2]
 input_rgb, output_rgb = mode[output_mode][3:]
+input_rgb = input_ch
 
 
 save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
@@ -92,14 +93,16 @@ train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
 test_transform = None
 train_dataset = SpectralFusionDataset(train_path, mask_path,
                                       transform=train_transform, concat=concat_flag,
-                                      data_name=data_name)
+                                      data_name=data_name, rgb_input=mode[output_mode][0], 
+                                      rgb_label=mode[output_mode][1])
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
                                                shuffle=True, num_workers=4)
 test_dataset = SpectralFusionDataset(test_path, eval_mask_path,
                                      transform=test_transform, concat=concat_flag,
-                                     data_name=data_name)
+                                     data_name=data_name, rgb_input=mode[output_mode][0], 
+                                     rgb_label=mode[output_mode][1])
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, 
-        shuffle=False, num_workers=8)
+                                              shuffle=False, num_workers=8)
 
 
 model = SpectralFusion(input_rgb_ch=input_rgb, input_hsi_ch=input_ch,
