@@ -59,19 +59,20 @@ class RGBHSCNN(Base_Module):
         #                                            for i in range(layer_num)})
         self.activation_layer = torch.nn.ModuleDict({f'RGB_act_{i}': self.activations[activation]()
                                                      for i in range(layer_num)})
-        self.all_concat_conv = torch.nn.ModuleDict({f'RGB_Concat': torch.nn.Conv2d(feature_num * layer_num, feature_num, 1, 1, 0)})
+        self.all_concat_conv = torch.nn.ModuleDict({f'RGB_Concat': torch.nn.Conv2d(feature_num * (layer_num + 1), feature_num, 1, 1, 0)})
         self.output_conv = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
 
         x = self.input_activation(self.input_conv(x))
-        all_x = []
+        all_x = x
         if self.res is True:
             x_in = x
         for layer, activation in zip(self.feature_layers.values(), self.activation_layer.values()):
             x = activation(layer(x))
-            all_x.append(x)
-        x = all_concat_conv(x)
+            all_x = torch.cat([all_x, x], dim=1)
+            # all_x.append(x)
+        x = self.all_concat_conv['RGB_Concat'](all_x)
         if self.res is True:
             x = x_in + x
         x = self.output_conv(x)
