@@ -84,7 +84,8 @@ input_rgb = 32 if concat_flag else 1
 output_rgb = 3
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+edsr_mode = 'separable'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
@@ -108,8 +109,9 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
 #                        output_rgb_ch=output_rgb, output_hsi_ch=31,
 #                        rgb_feature=31, hsi_feature=31, fusion_feature=31,
 #                        layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode).to(device)
-model = RGBHSCNN(input_rgb, output_rgb, feature_num=31, layer_num=block_num, rgb_mode=conv_mode).to(device)
+model = RGBHSCNN(input_rgb, output_rgb, feature_num=31, layer_num=block_num, rgb_mode=conv_mode, edsr_mode=edsr_mode).to(device)
 
+print(model)
 
 # summary_input = {'both': ((1, input_rgb, 48, 48), (1, input_ch, 48, 48)),
 #                  'inputOnly': ((1, 1, 48, 48), (1, input_ch, 48, 48)),

@@ -65,11 +65,8 @@ all_trained_ckpt_path = os.path.join(ckpt_path, save_model_name, f'{save_model_n
 # os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
-
 model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': DeepSSPrior}
 activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu'}
-
-
 
 
 model_names = os.listdir(sota_path)
@@ -99,7 +96,7 @@ ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
                   map_location=torch.device('cpu'))
 model.load_state_dict(ckpt['model_state_dict'])
 
-model.to(device)
+model.to('cuda')
 print(next(model.parameters()).is_cuda)
 # summary(model, (1, input_ch, 48, 48), depth=8)
 psnr = PSNRMetrics().to(device).eval()

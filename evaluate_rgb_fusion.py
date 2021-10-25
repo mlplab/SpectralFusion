@@ -115,7 +115,7 @@ model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  output_rgb_ch=output_rgb, output_hsi_ch=output_hsi,
                                  rgb_feature=31, hsi_feature=31, fusion_feature=31,
                                  layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode,
-                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar')).to(device)
+                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'))
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
@@ -123,7 +123,7 @@ ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
 model.load_state_dict(ckpt['model_state_dict'])
 
 
-model.to(device)
+model.to('cuda')
 # summary(model, (1, input_ch, 48, 48), depth=8)
 psnr = PSNRMetrics().to(device).eval()
 ssim = SSIM().to(device).eval()

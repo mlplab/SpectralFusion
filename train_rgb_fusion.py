@@ -87,7 +87,8 @@ input_hsi = 32 if concat_flag else 1
 output_hsi = 31
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+edsr_mode = 'separable'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
@@ -109,7 +110,7 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
                                               shuffle=False, num_workers=8)
 
 
-rgb_encoder_path = f'{rgb_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+rgb_encoder_path = f'{rgb_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  output_rgb_ch=output_rgb, output_hsi_ch=output_hsi,
                                  rgb_feature=31, hsi_feature=31, fusion_feature=31,
@@ -120,7 +121,7 @@ model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  output_rgb_ch=output_rgb, output_hsi_ch=output_hsi,
                                  rgb_feature=31, hsi_feature=31, fusion_feature=31,
                                  layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode,
-                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar')).to(device)
+                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'), edsr_mode=edsr_mode).to(device)
 
 criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
 criterion = criterions[loss_mode]().to(device)

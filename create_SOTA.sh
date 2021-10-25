@@ -50,8 +50,8 @@ for dataset in $datasets; do
 
             upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
             mkdir -p ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload
-            cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name\_output.csv ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
-            cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar
+            cp ../SCI_result/$dataset\_sota/$model_name/output.csv ../SCI_result/$dataset\_sota/$model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
+            # cp ../SCI_result/$dataset\_sota/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar
             skicka upload ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
             rm -rf ../SCI/result/$dataset\_sota/$upload_model_name
         done

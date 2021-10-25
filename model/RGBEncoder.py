@@ -24,6 +24,7 @@ class SpectralFusionRGBEncoder(Base_Module):
         ratio = kwargs.get('ratio', 2)
         rgb_mode = kwargs.get('rgb_mode', 'normal')
         hsi_mode = kwargs.get('hsi_mode', 'normal')
+        edsr_mode = kwargs.get('edsr_mode', 'normal')
         rgb_encoder_path = kwargs.get('rgb_encoder_path', None)
         self.input_rgb_ch = input_rgb_ch
         self.output_rgb_ch = output_rgb_ch
@@ -32,14 +33,16 @@ class SpectralFusionRGBEncoder(Base_Module):
         self.res = res
         self.mode = mode
         self.rgb_layer = RGBHSCNN(input_rgb_ch, output_rgb_ch, feature_num=rgb_feature,
-                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio)
+                                  layer_num=layer_num, rgb_mode=rgb_mode, ratio=ratio,
+                                  edsr_mode=edsr_mode)
         if rgb_encoder_path is not None and isinstance(rgb_encoder_path, str):
             ckpt = torch.load(rgb_encoder_path, map_location='cpu')
             self.rgb_layer.load_state_dict(ckpt['model_state_dict'])
             for param in self.rgb_layer.parameters():
                 param.requires_grad = False
         self.hsi_layer = HSIHSCNN(input_hsi_ch, output_hsi_ch, feature_num=hsi_feature,
-                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio)
+                                  layer_num=layer_num, hsi_mode=hsi_mode, ratio=ratio,
+                                  edsr_mode=edsr_mode)
         if mode == 'c': # Normal Concatenate
             self.fusion_layer = torch.nn.ModuleDict({f'Fusion_{i}': torch.nn.Conv2d(rgb_feature + hsi_feature, fusion_feature, 1, 1, 0)
                                                      for i in range(layer_num)})

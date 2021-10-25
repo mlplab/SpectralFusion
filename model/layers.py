@@ -457,11 +457,12 @@ class Mix_SS_Layer(torch.nn.Module):
 class EDSR_Block(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 activation: str='relu', **kwargs) -> None:
+                 activation: str='relu', mode: str='normal', **kwargs) -> None:
         super().__init__()
-        self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv}
+        self.conv1 = layers(input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
-        self.conv2 = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
+        self.conv2 = layers(feature_num, output_ch, 3, 1, 1)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         x_in = x
@@ -475,11 +476,12 @@ class EDSR_Block(Base_Module):
 class HSI_EDSR_Block(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
-                 activation: str='relu', **kwargs) -> None:
+                 activation: str='relu', mode: str='normal', **kwargs) -> None:
         super().__init__()
-        self.conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv}
+        self.conv1 = layers(input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
-        self.conv2 = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
+        self.conv2 = layers(feature_num, output_ch, 3, 1, 1)
         self.channel_conv = torch.nn.Conv2d(output_ch, output_ch, 1, 1, 0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
