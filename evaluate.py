@@ -270,6 +270,9 @@ class ReconstRGB(ReconstEvaluater):
                     show_evaluate = np.mean(np.array(output_evaluate, dtype=np.float32), axis=0)
                     self._step_show(pbar, Metrics=show_evaluate)
                     del show_evaluate
+                    inputs = self._cpu_data(inputs, device='cpu')
+                    output = self._cpu_data(output, device='cpu')
+                    labels = self._cpu_data(labels, device='cpu')
                     self._save_all(i, inputs, output, labels)
                     self._save_mat(i, idx, output)
         self._save_csv(output_evaluate, header)
@@ -321,3 +324,13 @@ class ReconstRGB(ReconstEvaluater):
         output_evaluate_csv.to_csv(self.save_csv_path, header=header)
         print(means)
         return self
+
+    def _cpu_data(self, data: torch.Tensor, device: str='cuda') -> torch.Tensor:
+        if isinstance(data, (list, tuple)):
+            data = [x.to(device) for x in data]
+        elif isinstance(data, (dict)):
+            return {key: value.to(device) for key, value in data.items()}
+        else:
+            data = data.to(device)
+        return data
+
