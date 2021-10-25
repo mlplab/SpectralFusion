@@ -122,9 +122,6 @@ model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  rgb_feature=31, hsi_feature=31, fusion_feature=31,
                                  layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode,
                                  rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'), edsr_mode=edsr_mode).to(device)
-=======
-                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar')).to(device)
->>>>>>> cab063e7adb6747480f19cc0f2da5f9b1560b90c
 
 criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
 criterion = criterions[loss_mode]().to(device)
@@ -133,10 +130,10 @@ optim = torch.optim.Adam(lr=1e-3, params=param)
 scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
 
-ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
-                          mkdir=True, partience=1, varbose=True)
+# ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
+#                           mkdir=True, partience=1, varbose=True)
 trainer = Trainer(model, criterion, optim, scheduler=scheduler,
-                  callbacks=[ckpt_cb], device=device, use_amp=True,
+                  callbacks=[], device=device, use_amp=True,
                   psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
 torch.save({'model_state_dict': model.state_dict(),
