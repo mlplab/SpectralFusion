@@ -62,7 +62,6 @@ class PSNRMetrics(torch.nn.Module):
         _, c, _, _ = x.shape
         all_psnr = [10 * torch.log10(y[:, i].max() ** 2. / self.criterion(x[:, i], y[:, i])) for i in range(c)]
         return torch.mean(torch.Tensor(all_psnr))
-        # return 10. * torch.log10(y.max() ** 2. / self.criterion(x, y))
 
 
 class SAMMetrics(torch.nn.Module):
