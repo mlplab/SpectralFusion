@@ -43,12 +43,12 @@ for dataset in $datasets; do
             name_block_num=$(printf %02d $block_num)
             model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
 
-            if [ -d ./SCI_result/$dataset\_sota/$model_name ]; then
-                python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
-                python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
-            fi
+            # if [ -d ./SCI_result/$dataset\_sota/$model_name ]; then
+                # python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $model_name
+            python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
+            # fi
 
-            upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
             mkdir -p ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload
             cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name\_output.csv ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
             cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar

@@ -54,14 +54,15 @@ loss_mode = args.loss
 
 device = 'cpu'
 
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
 
 img_path = f'../SCI_dataset/My_{data_name}'
 test_path = os.path.join(img_path, 'eval_data')
 mask_path  = os.path.join(img_path, 'eval_mask_data')
 sota_path = os.path.join('../SCI_ckpt', f'{data_name}_SOTA')
-ckpt_path = os.path.join('../SCI_ckpt', f'{data_name}_{dt_now}')
-all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained_sota')
-os.makedirs(all_trained_ckpt_path, exist_ok=True)
+ckpt_path = os.path.join('../SCI_result', f'{data_name}_sota')
+all_trained_ckpt_path = os.path.join(ckpt_path, save_model_name, f'{save_model_name}_upload')
+# os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
 
@@ -69,22 +70,19 @@ model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': Deep
 activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu'}
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
 
 
 model_names = os.listdir(sota_path)
 model_names = [name.split('.')[0] for name in model_names]
 
 
-output_path = os.path.join('../SCI_result/', f'{data_name}_sota_{dt_now}', save_model_name)
+output_path = os.path.join('../SCI_result/', f'{data_name}_sota', save_model_name)
 output_img_path = os.path.join(output_path, 'output_img')
 output_mat_path = os.path.join(output_path, 'output_mat')
 output_csv_path = os.path.join(output_path, f'output.csv')
-output_fig_path = os.path.join(output_path, 'figure')
 os.makedirs(output_path, exist_ok=True)
 os.makedirs(output_img_path, exist_ok=True)
 os.makedirs(output_mat_path, exist_ok=True)
-os.makedirs(output_fig_path, exist_ok=True)
 if os.path.exists(output_csv_path):
     print('already evaluated')
     sys.exit(0)
