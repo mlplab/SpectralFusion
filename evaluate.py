@@ -42,6 +42,7 @@ class RMSEMetrics(torch.nn.Module):
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.sqrt(self.criterion(x, y))
 
+
 class None_Evaluate(torch.nn.Module):
 
     def __init__(self) -> None:
@@ -49,6 +50,7 @@ class None_Evaluate(torch.nn.Module):
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.zeros((1,))
+
 
 class PSNRMetrics(torch.nn.Module):
 
