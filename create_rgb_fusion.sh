@@ -43,7 +43,7 @@ for dataset in $datasets; do
         for concat in $concats; do
             for mode in $modes; do
                 for conv_mode in $conv_modes; do
-                    python train_rgb.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_mode -cm $conv_mode
+                    python train_rgb_fusion.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -md $mode -l $loss_mode -cm $conv_mode
                     name_block_num=$(printf %02d $block_num)
                     model_name=$base_model_name\_$name_block_num\_$loss_mode\_$mode\_$start_time\_$concat\_$conv_mode
                     if [ ! -e ../SCI_result/$dataset\_$start_time/$model_name/output.csv ]; then
