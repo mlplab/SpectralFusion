@@ -20,7 +20,7 @@ from utils import normalize
 
 
 warnings.simplefilter('ignore')
-device = 'cpu'
+# device = 'cpu'
 plt.rcParams['image.cmap'] = 'gray'
 
 
@@ -42,6 +42,7 @@ class RMSEMetrics(torch.nn.Module):
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.sqrt(self.criterion(x, y))
 
+
 class None_Evaluate(torch.nn.Module):
 
     def __init__(self) -> None:
@@ -49,6 +50,7 @@ class None_Evaluate(torch.nn.Module):
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
         return torch.zeros((1,))
+
 
 class PSNRMetrics(torch.nn.Module):
 
@@ -75,13 +77,13 @@ class Evaluater(object):
 
     def __init__(self, data_name: str, save_img_path: str='output_img',
                  save_mat_path: str='output_mat', save_csv_path: str='output_csv',
-                 **kwargs) -> None:
+                 device: str='cuda', **kwargs) -> None:
         self.data_name = data_name
         self.save_alls_path = save_img_path
         self.save_mat_path = save_mat_path
         self.save_csv_path = save_csv_path
-        self.output_ch = kwargs.get('output_ch', (26, 16, 9))
-        # self.output_ch = {'CAVE': (26, 16, 9), 'Harvard': (26, 16, 9), 'ICVL': (26, 16, 9)}
+        self.output_ch = {'CAVE': (26, 16, 9), 'Harvard': (26, 16, 9), 'ICVL': (26, 16, 9)}
+        self.device = device
         os.makedirs(self.save_alls_path, exist_ok=True)
         os.makedirs(save_mat_path, exist_ok=True)
 
@@ -148,7 +150,7 @@ class Evaluater(object):
         return self
 
     def _step_show(self, pbar, *args, **kwargs) -> None:
-        if device == 'cuda':
+        if self.device == 'cuda':
             kwargs['Allocate'] = f'{torch.cuda.memory_allocated(0) / 1024 ** 3:.3f}GB'
             kwargs['Cache'] = f'{torch.cuda.memory_cached(0) / 1024 ** 3:.3f}GB'
         pbar.set_postfix(kwargs)
@@ -198,12 +200,15 @@ class ReconstEvaluater(Evaluater):
                     show_evaluate = np.mean(np.array(output_evaluate, dtype=np.float32), axis=0)
                     self._step_show(pbar, Metrics=show_evaluate)
                     del show_evaluate
+                    inputs = self._trans_data(inputs, devcie='cpu')
+                    output = self._trans_data(output, devcie='cpu')
+                    labels = self._trans_data(labels, devcie='cpu')
                     self._save_all(i, inputs, output, labels)
                     self._save_mat(i, idx, output)
         self._save_csv(output_evaluate, header)
         return self
 
-    def _trans_data(self, data: torch.Tensor) -> torch.Tensor:
+    def _trans_data(self, data: torch.Tensor, device: str='cuda') -> torch.Tensor:
         if isinstance(data, (list, tuple)):
             data = [x.unsqueeze(0).to(device) for x in data]
         elif isinstance(data, (dict)):
