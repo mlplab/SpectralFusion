@@ -76,7 +76,8 @@ input_rgb = 32 if concat_flag else 1
 output_rgb = 3
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+edsr_mode = 'separable'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 
 
 model_names = os.listdir(sota_path)
@@ -102,7 +103,7 @@ test_dataset = RGBPreTrainEvalDataloader(test_path, mask_path,
                                          data_name=data_name)
 
 
-model = RGBHSCNN(input_rgb, output_rgb, feature_num=31, layer_num=block_num, rgb_mode=conv_mode).to(device)
+model = RGBHSCNN(input_rgb, output_rgb, feature_num=31, layer_num=block_num, rgb_mode=conv_mode, edsr_mode=edsr_mode)
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
@@ -110,7 +111,7 @@ ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
 model.load_state_dict(ckpt['model_state_dict'])
 
 
-model.to(device)
+model.to('cuda')
 # summary(model, (1, input_ch, 48, 48), depth=8)
 psnr = PSNRMetrics().to(device).eval()
 ssim = SSIM().to(device).eval()

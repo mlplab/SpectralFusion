@@ -81,7 +81,8 @@ input_hsi = 32 if concat_flag else 1
 output_hsi = 31
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+edsr_mode = 'separable'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 
 
 model_names = os.listdir(sota_path)
@@ -109,17 +110,13 @@ test_dataset = RGBTrainEvalDataloader(test_path, mask_path,
                                       load_mode=load_mode[data_name])
 
 
-rgb_encoder_path = f'{rgb_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+rgb_encoder_path = f'{rgb_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 
 model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  output_rgb_ch=output_rgb, output_hsi_ch=output_hsi,
                                  rgb_feature=31, hsi_feature=31, fusion_feature=31,
                                  layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode,
-<<<<<<< HEAD
-                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'))
-=======
-                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar')).to(device)
->>>>>>> cab063e7adb6747480f19cc0f2da5f9b1560b90c
+                                 rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'), edsr_mode=edsr_mode)
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
@@ -127,11 +124,7 @@ ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
 model.load_state_dict(ckpt['model_state_dict'])
 
 
-<<<<<<< HEAD
 model.to('cuda')
-=======
-model.to(device)
->>>>>>> cab063e7adb6747480f19cc0f2da5f9b1560b90c
 # summary(model, (1, input_ch, 48, 48), depth=8)
 psnr = PSNRMetrics().to(device).eval()
 ssim = SSIM().to(device).eval()
