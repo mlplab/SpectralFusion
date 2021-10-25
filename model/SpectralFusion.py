@@ -175,7 +175,7 @@ class HSIHSCNN(Base_Module):
         activation = kwargs.get('activation', 'relu').lower()
         self.input_conv = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
         self.input_activation = self.activations[activation]()
-        hsi_layer = {'normal': Conv2d, 'edsr': EDSR_Block, 'ghost': Ghost_Mix}
+        hsi_layer = {'normal': Conv2d, 'edsr': HSI_EDSR_Block, 'ghost': Ghost_Mix}
         ratio = kwargs.get('ratio', 2)
         edsr_mode = kwargs.get('edsr_mode', 'normal')
         self.feature_layers = torch.nn.ModuleDict({f'HSI_{i}': hsi_layer[hsi_mode.lower()](feature_num, feature_num, ratio=ratio, edsr_mode=edsr_mode)
