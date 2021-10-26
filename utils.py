@@ -32,7 +32,7 @@ def calc_filter(img: np.ndarray, filter: np.ndarray) -> np.ndarray:
 
 
 def make_patch(data_path: str, save_path: str, size: int=256, step: int=256,
-               ch: int=24, data_key: str='data', norm: bool=True) -> None:
+               ch: int=24, data_key: str='data', norm: bool=False) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -60,7 +60,7 @@ def make_patch(data_path: str, save_path: str, size: int=256, step: int=256,
 
 def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=256,
                     step: int=256, ch: int=31, data_key: str='data', load_mode: str='mat',
-                    norm: bool=True) -> None:
+                    norm: bool=False) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -100,7 +100,7 @@ def make_patch_list(data_path: str, data_list: list, save_path: str, size: int=2
 
 
 def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256,
-                    ch: int=24, data_key: str='data', norm: bool=True) -> None:
+                    ch: int=24, data_key: str='data', norm: bool=False) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
@@ -133,7 +133,7 @@ def make_patch_h5py(data_path: str, save_path: str, size: int=256, step: int=256
 
 def make_patch_h5py_list(data_path: str, data_list: list, save_path: str,
                          size: int=256, step: int=256, ch: int=24,
-                         data_key: str='data', norm: bool=True) -> None:
+                         data_key: str='data', norm: bool=False) -> None:
 
     if os.path.exists(save_path):
         shutil.rmtree(save_path)
