@@ -6,11 +6,11 @@ CMDNAME=`basename $0`
 
 batch_size=64
 # search_epoch=100
-train_epoch=1
+train_epoch=150
 datasets=("CAVE" "Harvard")
 base_model_name="SpectralFusionRGBEncoder"
 rgb_model_name="RGBEncoder"
-block_nums=(1)
+block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
 concats=('False')
 modes=("inputOnly")
 conv_modes=("edsr")
