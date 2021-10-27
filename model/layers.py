@@ -126,6 +126,26 @@ class FusionLoss(torch.nn.Module):
         return self.hsi_fn(hsi_x, hsi_y) + self.hsi_fn(hsi_x, hsi_y)
 
 
+class TV(torch.nn.Module):
+
+    def __init__(self, mean_reducation: bool=False) -> None:
+        super().__init__()
+        self.mean_reducation = mean_reducation
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        n_dim = len(x.shape)
+        diff_x = torch.abs(x[:, :, 1:, :] - x[:, :, :-1, :])
+        diff_y = torch.abs(x[:, :, :, 1:] - x[:, :, :, :-1])
+        # all_diff = diff_x + diff_y
+        sum_axis = tuple({abs(i) for i in range(1, n_dim)})
+        x_denominator = diff_x.shape[1:].numel() if self.mean_reducation else 1
+        y_denominator = diff_y.shape[1:].numel() if self.mean_reducation else 1
+        print(x_denominator)
+        print(y_denominator)
+        return torch.sum(diff_x, axis=sum_axis) / x_denominator + torch.sum(diff_y, axis=sum_axis) / y_denominator 
+
+
+
 # ########################## Loss Function ##########################
 
 
