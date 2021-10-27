@@ -16,6 +16,7 @@ class PatchMaskDataset(torch.utils.data.Dataset):
 
         self.img_path = img_path
         self.data = os.listdir(img_path)
+        self.data.sort()
         self.mask_path = mask_path
         self.data_len = len(self.data)
         self.concat = concat
@@ -87,6 +88,7 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
 
         self.img_path = img_path
         self.data = os.listdir(img_path)
+        self.data.sort()
         self.mask_path = mask_path
         self.data_len = len(self.data)
         self.concat = concat
@@ -202,6 +204,7 @@ class RGBPreTrainDataloader(torch.utils.data.Dataset):
 
         self.img_path = img_path
         self.data = os.listdir(img_path)
+        self.data.sort()
         self.mask_path = mask_path
         self.data_len = len(self.data)
         self.concat = concat
@@ -279,6 +282,7 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
 
         self.img_path = img_path
         self.data = os.listdir(img_path)
+        self.data.sort()
         self.mask_path = mask_path
         self.data_len = len(self.data)
         self.concat = concat
