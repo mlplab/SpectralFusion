@@ -141,15 +141,12 @@ class DW_PT_Conv(Base_Module):
 
     def __init__(self, input_ch: int, output_ch: int, kernel_size: int, stride: int, padding: int, activation: str='relu'):
         super(DW_PT_Conv, self).__init__()
-        self.activation = self.activations[activation]()
         self.depth = torch.nn.Conv2d(input_ch, input_ch, kernel_size, stride=stride, padding=padding, groups=input_ch)
         self.point = torch.nn.Conv2d(input_ch, output_ch, 1, 1, 0)
 
     def forward(self, x):
         x = self.depth(x)
-        x = self.activation(x)
         x = self.point(x)
-        x = self.activation(x)
         return x
 
 
