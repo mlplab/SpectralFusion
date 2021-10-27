@@ -200,9 +200,9 @@ class ReconstEvaluater(Evaluater):
                     show_evaluate = np.mean(np.array(output_evaluate, dtype=np.float32), axis=0)
                     self._step_show(pbar, Metrics=show_evaluate)
                     del show_evaluate
-                    inputs = self._trans_data(inputs, devcie='cpu')
-                    output = self._trans_data(output, devcie='cpu')
-                    labels = self._trans_data(labels, devcie='cpu')
+                    inputs = self._trans_cpu(inputs, devcie='cpu')
+                    output = self._trans_cpu(output, devcie='cpu')
+                    labels = self._trans_cpu(labels, devcie='cpu')
                     self._save_all(i, inputs, output, labels)
                     self._save_mat(i, idx, output)
         self._save_csv(output_evaluate, header)
@@ -215,4 +215,13 @@ class ReconstEvaluater(Evaluater):
             return {key: value.unsqueeze(0).to(device) for key, value in data.items()}
         else:
             data = data.unsqueeze(0).to(device)
+        return data
+
+    def _trans_cpu(self, data: torch.Tensor, device: str='cpu') -> torch.Tensor:
+        if isinstance(data, (list, tuple)):
+            data = [x.to(device) for x in data]
+        elif isinstance(data, (dict)):
+            return {key: value.to(device) for key, value in data.items()}
+        else:
+            data = data.to(device)
         return data
