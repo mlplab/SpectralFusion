@@ -140,10 +140,20 @@ class TV(torch.nn.Module):
         sum_axis = tuple({abs(i) for i in range(1, n_dim)})
         x_denominator = diff_x.shape[1:].numel() if self.mean_reducation else 1
         y_denominator = diff_y.shape[1:].numel() if self.mean_reducation else 1
-        print(x_denominator)
-        print(y_denominator)
         return torch.sum(diff_x, axis=sum_axis) / x_denominator + torch.sum(diff_y, axis=sum_axis) / y_denominator 
 
+
+class TV_MSELoss(torch.nn.Module):
+
+    def __init__(self, mean_reducation: bool=False) -> None:
+        super().__init__()
+        self.mse = torch.nn.MSELoss()
+        self.tv = TV(mean_reducation=mean_reducation)
+
+    def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
+        xTV = self.tv(x)
+        yTV = self.tv(y)
+        return self.mse(xTV, yTV)
 
 
 # ########################## Loss Function ##########################
