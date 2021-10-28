@@ -34,6 +34,7 @@ parser.add_argument('--start_time', '-st', default='0000', type=str, help='start
 parser.add_argument('--mode', '-md', default='both', type=str, help='Model Mode')
 parser.add_argument('--loss', '-l', default='fusion', type=str, help='Loss Mode')
 parser.add_argument('--conv_mode', '-cm', default='normal', type=str, help='Conv Layer Mode')
+parser.add_argument('--edsr_mode', '-em', default='normal', type=str, help='Conv Layer Mode')
 args = parser.parse_args()
 
 
@@ -54,7 +55,7 @@ loss_mode = args.loss
 conv_mode = args.conv_mode
 
 
-device = 'cpu'
+device = 'cuda'
 
 
 mode = {'both': [True, True, 'fusion', 3, 3],
@@ -70,7 +71,8 @@ sota_path = os.path.join('../SCI_ckpt', f'{data_name}_SOTA')
 ckpt_path = os.path.join('../SCI_ckpt', f'{data_name}_{dt_now}')
 all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}_{conv_mode}'
+edsr_mode = args.edsr_mode
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 
 
 model_names = os.listdir(sota_path)
@@ -94,7 +96,8 @@ if os.path.exists(output_csv_path):
 test_dataset = PatchEvalDataset(test_path, mask_path, transform=None,
                                 concat=concat_flag, data_name=data_name)
 model = HSIHSCNN(input_ch=input_ch, output_ch=31,
-                 feature_num=31, layer_num=block_num, hsi_mode=conv_mode).to(device)
+                 feature_num=31, layer_num=block_num, hsi_mode=conv_mode, edsr_mode=edsr_mode).to(device)
+ 
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
