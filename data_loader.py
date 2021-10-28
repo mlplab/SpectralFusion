@@ -97,9 +97,9 @@ class SpectralFusionDataset(torch.utils.data.Dataset):
         # self.return_mode = return_mode
         self.rgb_input = rgb_input
         self.rgb_label = rgb_label
-        self.rgb_ch = {'CAVE': (26, 16, 9),
-                       'Harvard': (26, 16, 9),
-                       'ICVL': (26, 16, 9)}
+        self.rgb_ch = {'CAVE': (30, 15, 4),
+                       'Harvard': (28, 13, 2),
+                       'ICVL': (30, 15, 4)}
 
     def __getitem__(self, idx: int) -> (dict, dict):
         patch_id = self.data[idx].split('.')[0].split('_')[-1]

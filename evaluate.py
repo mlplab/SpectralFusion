@@ -82,7 +82,7 @@ class Evaluater(object):
         self.save_alls_path = save_img_path
         self.save_mat_path = save_mat_path
         self.save_csv_path = save_csv_path
-        self.output_ch = {'CAVE': (26, 16, 9), 'Harvard': (26, 16, 9), 'ICVL': (26, 16, 9)}
+        self.output_ch = {'CAVE': (30, 15, 4), 'Harvard': (28, 13, 2), 'ICVL': (30, 15, 4)}
         self.device = device
         os.makedirs(self.save_alls_path, exist_ok=True)
         os.makedirs(save_mat_path, exist_ok=True)
