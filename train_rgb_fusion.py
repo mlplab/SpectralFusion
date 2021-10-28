@@ -34,6 +34,7 @@ parser.add_argument('--mode', '-md', default='inputOnly', type=str, help='Model 
 parser.add_argument('--loss', '-l', default='mse', type=str, help='Loss Mode')
 parser.add_argument('--conv_mode', '-cm', default='normal', type=str, help='Conv Layer Mode')
 parser.add_argument('--rgb_name', '-rn', default='RGBEncoder', type=str, help='PreTrain Model Name')
+parser.add_argument('--edsr_mode', '-em', default='normal', type=str, help='Conv Layer Mode')
 args = parser.parse_args()
 
 
@@ -87,7 +88,7 @@ input_hsi = 32 if concat_flag else 1
 output_hsi = 31
 
 
-edsr_mode = 'separable'
+edsr_mode = args.edsr_mode
 save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
