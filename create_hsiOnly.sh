@@ -7,11 +7,15 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("Harvard")
+datasets=("CAVE")
 base_model_name="HSIHSCNN"
-block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
-concats=('False' 'True')
-conv_modes=("edsr")
+block_nums=()
+for i in {1..13}; do
+    block_nums+=($i)
+done
+concats=('False')
+conv_mode="edsr"
+edsr_modes=("normal" "separable")
 loss_mode="mse"
 start_time=$(date "+%m%d")
 # start_time='0919'
@@ -39,12 +43,12 @@ for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/HSIHSCNN
     for block_num in $block_nums; do
         for concat in $concats; do
-            for conv_mode in $conv_modes; do
-                python train_hsiOnly.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -l $loss_mode -cm $conv_mode
-                python evaluate_hsiOnly.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -l $loss_mode -cm $conv_mode
+            for edsr_mode in $edsr_modes; do
+                python train_hsiOnly.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -l $loss_mode -cm $conv_mode -em $edsr_mode
+                python evaluate_hsiOnly.py -e $train_epoch -d $dataset -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name -l $loss_mode -cm $conv_mode -em $edsr_mode
 
                 name_block_num=$(printf %02d $block_num)
-                model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat\_$conv_mode
+                model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat\_$conv_mode\_$edsr_mode
                 mkdir -p ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/$model_name\_output.csv
                 cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
