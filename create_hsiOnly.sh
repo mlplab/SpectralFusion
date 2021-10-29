@@ -7,7 +7,7 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("CAVE")
+datasets=("CAVE" "Harvard")
 base_model_name="HSIHSCNN"
 block_nums=()
 for i in {1..13}; do
