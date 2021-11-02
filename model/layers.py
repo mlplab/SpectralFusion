@@ -84,12 +84,14 @@ class SpectralMSELoss(torch.nn.Module):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        self.mse = torch.nn.MSELoss()
+        reduction = kwargs.get('reduction', 'sum')
+        self.mse = torch.nn.MSELoss(reduction=reduction)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:
-        _, c, _, _ = x.shape
-        all_loss = torch.Tensor([self.mse(x[:, i], y[:, i]) for i in range(c)])
+        all_loss = self.mse(x, y)
+        all_loss = torch.sqrt(all_loss.sum(dim=(2, 3)))
         return all_loss.mean()
+
 
 class SAMLoss(torch.nn.Module):
 
