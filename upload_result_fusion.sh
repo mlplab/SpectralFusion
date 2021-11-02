@@ -7,13 +7,15 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("CAVE" "Harvard")
-base_model_name="SpectralFusion_EDSR"
+datasets=("Harvard")
+base_model_name="SpectralFusionRGBEncoder"
 block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
-concats=('False' 'True')
-mode=("inputOnly")
-conv_modes=("normal" "edsr" "ghost")
-loss_modes=("fusion" "fusion" "mse")
+concats=('False')
+mode="inputOnly"
+conv_mode='edsr'
+edsr_modes=('normal' 'separable')
+# loss_modes=("fusion" "fusion" "mse")
+loss_mode='mse'
 start_time=$(date "+%m%d")
 # start_time='0915'
 
@@ -41,10 +43,10 @@ for dataset in $datasets; do
     for block_num in $block_nums; do
         for concat in $concats; do
             i=1
-            for conv_mode in $conv_modes; do
+            for edsr_mode in $edsr_modes; do
 
                 name_block_num=$(printf %02d $block_num)
-                model_name=$base_model_name\_$name_block_num\_${loss_modes[$i]}\_$mode\_$start_time\_$concat\_$conv_mode
+                model_name=$base_model_name\_$name_block_num\_$loss_mode\_$mode\_$start_time\_$concat\_$conv_mode\_$edsr_mode
                 mkdir ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/$model_name\_output.csv
                 cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/
