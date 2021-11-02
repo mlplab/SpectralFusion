@@ -17,7 +17,7 @@ done
 concats=('False')
 modes=("inputOnly")
 conv_mode="edsr"
-edsr_modes=('normal' "separable")
+edsr_modes=("ghost")
 loss_mode="mse"
 start_time=$(date "+%m%d")
 # start_time='0915'

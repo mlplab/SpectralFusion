@@ -456,7 +456,7 @@ class EDSR_Block(Base_Module):
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
                  activation: str='relu', edsr_mode: str='normal', **kwargs) -> None:
         super().__init__()
-        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv}
+        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv, 'ghost': Ghost_normal}
         self.conv1 = layers[edsr_mode](input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
         self.conv2 = layers[edsr_mode](feature_num, output_ch, 3, 1, 1)
@@ -475,10 +475,10 @@ class HSI_EDSR_Block(Base_Module):
     def __init__(self, input_ch: int, output_ch: int, *args, feature_num: int=64,
                  activation: str='relu', edsr_mode: str='normal', **kwargs) -> None:
         super().__init__()
-        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv}
-        self.conv1 = layers[edsr_mode](input_ch, feature_num, 3, 1, 1)
+        layers = {'normal': torch.nn.Conv2d, 'separable': DW_PT_Conv, 'ghost': Ghost_normal}
+        self.conv1 = layers[edsr_mode.lower()](input_ch, feature_num, 3, 1, 1)
         self.activation = self.activations[activation]()
-        self.conv2 = layers[edsr_mode](feature_num, output_ch, 3, 1, 1)
+        self.conv2 = layers[edsr_mode.lower()](feature_num, output_ch, 3, 1, 1)
         self.channel_conv = torch.nn.Conv2d(output_ch, output_ch, 1, 1, 0)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
