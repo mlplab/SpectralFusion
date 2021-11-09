@@ -18,8 +18,8 @@ concats=('False')
 modes=("inputOnly")
 conv_mode="edsr"
 edsr_modes=("ghost")
-loss_modes=("mse" "spectral")
-start_time=$(date "+%m%d")
+loss_modes=("spectral")
+start_time = '1028'
 # start_time='0915'
 
 
