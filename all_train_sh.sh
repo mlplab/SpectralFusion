@@ -1,7 +1,8 @@
 # !/usr/bin/zsh
 
 
-start_time=$(date "+%m%d")
+# start_time=$(date "+%m%d")
+start_time='1028'
 train_epoch=150
 
 
