@@ -73,11 +73,11 @@ class SpectralFusionRGBEncoder(Base_Module):
             hsi_x = fusion_feature
             hsi_x = self.hsi_layer.activation_layer[f'HSI_act_{i}'](self.hsi_layer.feature_layers[f'HSI_{i}'](hsi_x))
         output_hsi = self.hsi_layer.output_conv(hsi_x)
-        if self.output_rgb_ch >= 1:
-            output_rgb = self.rgb_layer.output_conv(rgb_x)
-            return output_rgb, output_hsi
-        else:
-            return output_hsi
+        # if self.output_rgb_ch >= 1:
+        #     output_rgb = self.rgb_layer.output_conv(rgb_x)
+        #     return output_rgb, output_hsi
+        # else:
+        return output_hsi
 
     def get_feature(self, rgb: torch.Tensor, hsi: torch.Tensor, pick_layer: list) -> dict:
 
