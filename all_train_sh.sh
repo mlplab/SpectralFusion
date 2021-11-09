@@ -18,7 +18,7 @@ do
 done
 
 
-zsh create_SOTA.sh -s $start_time
+# zsh create_SOTA.sh -s $start_time
 # zsh create_fusion.sh -s $start_time -e $train_epoch
 zsh pre_create_rgb_fusion.sh -s $start_time -e $train_epoch
 zsh create_hsiOnly.sh -s $start_time -e $train_epoch

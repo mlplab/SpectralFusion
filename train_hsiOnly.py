@@ -13,7 +13,7 @@ from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
 from model.SpectralFusion import SpectralFusion, HSIHSCNN
-from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss
+from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss, SpectralMSELoss
 from data_loader import PatchMaskDataset, SpectralFusionDataset
 from evaluate import PSNRMetrics, SAMMetrics
 from utils import RandomCrop, RandomHorizontalFlip, RandomRotation
@@ -102,8 +102,7 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1,
 
 model = HSIHSCNN(input_ch=input_ch, output_ch=31,
                  feature_num=31, layer_num=block_num, hsi_mode=conv_mode, edsr_mode=edsr_mode).to(device)
-criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss,
-              'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
+criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss, 'spectral': SpectralMSELoss}
 criterion = criterions[loss_mode]().to(device)
 param = list(model.parameters())
 optim = torch.optim.Adam(lr=1e-3, params=param)

@@ -84,7 +84,7 @@ class SpectralMSELoss(torch.nn.Module):
 
     def __init__(self, *args, **kwargs) -> None:
         super().__init__()
-        reduction = kwargs.get('reduction', 'sum')
+        reduction = kwargs.get('reduction', 'none')
         self.mse = torch.nn.MSELoss(reduction=reduction)
 
     def forward(self, x: torch.Tensor, y: torch.Tensor) -> torch.Tensor:

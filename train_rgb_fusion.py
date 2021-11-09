@@ -14,7 +14,7 @@ from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
 from model.SpectralFusion import SpectralFusion, RGBHSCNN
 from model.RGBEncoder import SpectralFusionRGBEncoder
-from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss
+from model.layers import MSE_SAMLoss, FusionLoss, RMSELoss, SpectralMSELoss
 from data_loader import PatchMaskDataset, SpectralFusionDataset, RGBPreTrainDataloader, RGBTrainDataloader
 from evaluate import PSNRMetrics, SAMMetrics
 from utils import RandomCrop, RandomHorizontalFlip, RandomRotation
@@ -124,7 +124,7 @@ model = SpectralFusionRGBEncoder(input_rgb_ch=input_rgb, input_hsi_ch=input_hsi,
                                  layer_num=block_num, rgb_mode=conv_mode, hsi_mode=conv_mode,
                                  rgb_encoder_path=os.path.join(all_trained_ckpt_path, f'{rgb_encoder_path}.tar'), edsr_mode=edsr_mode).to(device)
 
-criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss}
+criterions = {'mse': torch.nn.MSELoss, 'rmse': RMSELoss, 'mse_sam': MSE_SAMLoss, 'fusion': FusionLoss, 'spectral': SpectralMSELoss}
 criterion = criterions[loss_mode]().to(device)
 param = list(model.parameters())
 optim = torch.optim.Adam(lr=1e-3, params=param)
