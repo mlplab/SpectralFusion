@@ -13,7 +13,7 @@ block_nums=()
 for i in {1..13}; do
     block_nums+=($i)
 done
-concats=('True')
+concats=('False')
 conv_mode="edsr"
 edsr_modes=("ghost")
 loss_modes=("mse" "spectral")

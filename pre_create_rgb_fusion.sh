@@ -14,7 +14,7 @@ block_nums=()
 for i in {1..13}; do
     block_nums+=($i)
 done
-concats=('True')
+concats=('False')
 modes=("inputOnly")
 conv_mode="edsr"
 edsr_modes=("ghost")
