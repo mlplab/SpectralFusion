@@ -204,6 +204,70 @@ class My_HSI_network(Base_Module):
         return x
 
 
+class My_Attention(Base_Module):
+
+    def __init__(self, input_ch: int, output_ch: int, *args,
+                 feature_num: int=64, activation: str='relu', **kwargs):
+        super(My_Attention, self).__init__()
+        self.activation = self.activations[activation]()
+        self.ratio = kwargs.get('ratio', 4)
+        self.spatial_attn = torch.nn.Conv2d(input_ch, output_ch, 3, 1, 1, groups=input_ch)
+        self.spectral_pooling = GVP()
+        self.spectral_Linear = torch.nn.Linear(input_ch, input_ch // self.ratio)
+        self.spectral_attn = torch.nn.Linear(input_ch // self.ratio, output_ch)
+
+    def forward(self, x):
+        batch_size, ch, h, w = x.size()
+        spatial_attn = self.spatial_attn(x)
+        spectral_pooling = self.spectral_pooling(x).view(-1, ch)
+        spectral_linear = torch.relu(self.spectral_Linear(spectral_pooling))
+        spectral_attn = self.spectral_attn(spectral_linear).unsqueeze(-1).unsqueeze(-1)
+
+        # attn_output = torch.sigmoid(spatial_attn + spectral_attn + spectral_pooling.unsqueeze(-1).unsqueeze(-1))
+        attn_output = torch.sigmoid(spatial_attn * spectral_attn)
+        output = attn_output * x
+        return output
+
+
+class Attention_HSI_Block(Base_Module):
+
+    def __init__(self, input_ch: int, output_ch: int, *args,
+                 feature_num: int=64, activation: str='relu', **kwargs) -> None:
+        super(Attention_HSI_Block, self).__init__()
+        self.activation = self.activations[activation]()
+        ratio = kwargs.get('ratio', 4)
+        self.spatial_conv1 = torch.nn.Conv2d(input_ch, feature_num, 3, 1, 1)
+        self.spatial_conv2 = torch.nn.Conv2d(feature_num, output_ch, 3, 1, 1)
+        self.attention_block = My_Attention(output_ch, output_ch, feature_num=feature_num,
+                                            ratio=ratio)
+        self.spectral_conv = torch.nn.Conv2d(output_ch, output_ch, 1, 1, 0)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        h = self.spatial_conv1(x)
+        h = self.activation(h)
+        h = self.spatial_conv2(h)
+        attn_h = self.attention_block(h)
+        x = attn_h + x
+        x = self.spectral_conv(x)
+        return x
+
+
+class Global_Average_Pooling2d(torch.nn.Module):
+
+    def forward(self, x):
+        bs, ch, h, w = x.size()
+        return torch.nn.functional.avg_pool2d(x, kernel_size=(h, w)).view(-1, ch)
+
+
+class GVP(torch.nn.Module):
+
+    def forward(self, x):
+        batch_size, ch, h, w = x.size()
+        avg_x = torch.nn.functional.avg_pool2d(x, kernel_size=(h, w))
+        var_x = torch.nn.functional.avg_pool2d((x - avg_x) ** 2, kernel_size=(h, w))
+        return var_x.view(-1, ch)
+
+
 class Conv2d(torch.nn.Module):
 
     def __init__(self, input_ch: int, output_ch: int, *args,
