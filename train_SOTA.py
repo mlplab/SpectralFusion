@@ -12,6 +12,8 @@ from trainer import Trainer
 from model.HSCNN import HSCNN
 from model.DeepSSPrior import DeepSSPrior
 from model.HyperReconNet import HyperReconNet
+from model.SSAttention import SSAttention
+from model.HyperMix import Mix_Reconst_Net
 from model.layers import MSE_SAMLoss
 from evaluate import PSNRMetrics, SAMMetrics, RMSEMetrics
 from pytorch_ssim import SSIM
@@ -30,6 +32,8 @@ parser.add_argument('--block_num', '-bn', default=3, type=int, help='Model Block
 parser.add_argument('--start_time', '-st', default='0000', type=str, help='start training time')
 parser.add_argument('--mode', '-md', default='both', type=str, help='Model Mode')
 parser.add_argument('--loss', '-l', default='fusion', type=str, help='Loss Mode')
+parser.add_argument('--chunck', '-ch', default=4, type=int, help='Loss Mode')
+parser.add_argument('--ratio', '-r', default=2, type=int, help='Loss Mode')
 args = parser.parse_args()
 
 
@@ -47,6 +51,8 @@ model_name = args.model_name
 block_num = args.block_num
 output_mode = args.mode
 loss_mode = args.loss
+chunck = args.chunck
+ratio = args.ratio
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
              'ICVL': 'h5'}
@@ -72,11 +78,11 @@ all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained_sota')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
-model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': DeepSSPrior}
-activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu'}
+model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': DeepSSPrior, 'Attention': SSAttention, 'HyperMix': Mix_Reconst_Net}
+activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu', 'Attention': 'relu', 'HyperMix': 'relu'}
 
 
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
@@ -95,7 +101,8 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffl
 
 
 model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
-                              layer_num=block_num, activation=activations[model_name])
+                              layer_num=block_num, activation=activations[model_name],
+                              chunks=chunck, ratio=ratio)
 
 
 model.to(device)
@@ -107,11 +114,9 @@ optim = torch.optim.Adam(lr=1e-3, params=param)
 scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
 
-ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
-                          mkdir=True, partience=1, varbose=True)
 trainer = Trainer(model, criterion, optim, scheduler=scheduler,
-                  callbacks=[ckpt_cb], device=device, use_amp=True,
-                  psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
+                  device=device, use_amp=True, psnr=PSNRMetrics(), 
+                  ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
 torch.save({'model_state_dict': model.state_dict(),
             'optim': optim.state_dict(),
