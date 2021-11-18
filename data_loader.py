@@ -322,7 +322,11 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
             hsi_data = measurement_data
         hsi_label = trans_data
 
-        rgb_input = hsi_data
+        if self.rgb_input:
+            rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
+        else:
+            rgb_input = hsi_data
+
         if self.rgb_label:
             rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
@@ -332,7 +336,7 @@ class RGBTrainDataloader(torch.utils.data.Dataset):
         label_data = {'hsi': hsi_label}
         input_data['rgb'] = rgb_input
         label_data['rgb'] = rgb_label
-        print('unk', hsi_data.shape, rgb_input.shape)
+        # print('unk', hsi_data.shape, rgb_input.shape)
         # print(input_data['hsi'].shape, input_data['rgb'].shape)
 
         return input_data, label_data
@@ -368,9 +372,9 @@ class RGBTrainEvalDataloader(RGBTrainDataloader):
         hsi_label = trans_data
 
         if self.rgb_input:
-            rgb_input = hsi_data
+            rgb_input = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
-            rgb_input = measurement_data
+            rgb_input = hsi_data
         if self.rgb_label:
             rgb_label = trans_data[self.rgb_ch[self.data_name], :, :]
         else:
