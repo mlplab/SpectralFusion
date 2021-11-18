@@ -82,10 +82,13 @@ all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
 
 
+# input_rgb = 3 if concat_flag else 1
+# input_rgb = 3
 input_rgb = 32 if concat_flag else 1
 output_rgb = 3
 input_hsi = 32 if concat_flag else 1
 output_hsi = 31
+print(concat_flag, input_hsi, input_rgb)
 
 
 edsr_mode = args.edsr_mode

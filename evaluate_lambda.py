@@ -52,9 +52,9 @@ mask_path = os.path.join(img_path, 'eval_mask_data')
 
 ckpt_dir = f'../SCI_ckpt/{data_name}_{dt_now}/all_trained_sota'
 ckpt_name = f'Lambda_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
-reconst_ckpt = f'Reconstruct_Stage'
+reconst_ckpt = f'Reconstruct_Stage_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
 reconst_path = os.path.join(ckpt_dir, f'{reconst_ckpt}.tar')
-refine_ckpt = f'Refine_Stage'
+refine_ckpt = f'Refine_Stage_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
 refine_path = os.path.join(ckpt_dir, f'{refine_ckpt}.tar')
 
 
@@ -62,6 +62,8 @@ output_path = os.path.join('../SCI_result/', f'{data_name}_{dt_now}', ckpt_name)
 output_img_path = os.path.join(output_path, 'output_img')
 output_mat_path = os.path.join(output_path, 'output_mat')
 output_csv_path = os.path.join(output_path, 'output.csv')
+if os.path.exists(output_csv_path):
+    exit(0)
 os.makedirs(output_path, exist_ok=True)
 os.makedirs(output_img_path, exist_ok=True)
 os.makedirs(output_mat_path, exist_ok=True)

@@ -45,10 +45,12 @@ for dataset in $datasets; do
 
             name_block_num=$(printf %02d $block_num)
             model_name=$model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            reconst_name=Reconstruct_Stage\_$name_block_num\_$loss_mode\_$start_time\_$concat
+            refine_name=Refine_Stage\_$name_block_num\_$loss_mode\_$start_time\_$concat
             mkdir -p ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
             cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-            cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/Reconstruct_Stage.tar  ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
-            cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/Refine_Stage.tar  ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
+            cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$reconst_name.tar  ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
+            cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$refine_name.tar  ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload
             skicka upload ../SCI_result/$dataset\_sota_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
         done
     done

@@ -40,7 +40,7 @@ if args.concat == 'False':
     input_ch = 1
 else:
     concat_flag = True
-    input_ch = 31
+    input_ch = 32
 data_name = args.dataset
 model_name = args.model_name
 block_num = args.block_num
@@ -68,8 +68,8 @@ ckpt_path = os.path.join('../SCI_ckpt', f'{data_name}_{dt_now}')
 # os.makedirs(trained_ckpt_path, exist_ok=True)
 all_trained_ckpt_path = os.path.join(ckpt_path, 'all_trained_sota')
 os.makedirs(all_trained_ckpt_path, exist_ok=True)
-save_model_name = f'Refine_Stage'
-reconst_name = f'Reconstruct_Stage'
+save_model_name = f'Refine_Stage_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
+reconst_name = f'Reconstruct_Stage_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print('already trained')
     exit(0)
