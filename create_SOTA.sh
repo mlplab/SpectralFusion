@@ -8,8 +8,8 @@ batch_size=64
 # search_epoch=100
 train_epoch=150
 datasets=("CAVE" "Harvard")
-# model_names=("HSCNN" "HyperReconNet" "DeepSSPrior" "Attention" "HyperMix")
-model_names=("Attention" "HyperMix")
+model_names=("HSCNN" "HyperReconNet" "DeepSSPrior" "Attention" "HyperMix")
+# model_names=("Attention" "HyperMix")
 block_nums=()
 for i in {1..9}; do
     block_nums+=($i)
@@ -17,8 +17,8 @@ done
 concats=('True')
 loss_modes=("mse" "mse_sam")
 chuncks=()
-# start_time=$(date "+%m%d")
-start_time='1115'
+start_time=$(date "+%m%d")
+# start_time='1115'
 # start_time=1009
 # start_time='0702'
 

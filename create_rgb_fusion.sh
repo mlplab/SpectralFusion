@@ -14,13 +14,13 @@ block_nums=()
 for i in {1..13}; do
     block_nums+=($i)
 done
-concats=('True')
+concats=('False' 'True')
 modes=("inputOnly")
 conv_mode="edsr"
 edsr_modes=("ghost")
-loss_modes=("spectral")
-start_time='1028'
-# start_time=$(date "+%m%d")
+loss_modes=("mse" "spectral")
+# start_time='1028'
+start_time=$(date "+%m%d")
 # start_time='0915'
 
 
