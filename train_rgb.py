@@ -96,12 +96,12 @@ train_transform = (RandomHorizontalFlip(), torchvision.transforms.ToTensor())
 test_transform = None
 train_dataset = RGBPreTrainDataloader(train_path, mask_path,
                                       transform=train_transform, concat=concat_flag,
-                                      data_name=data_name)
+                                      data_name=data_name, load_mode=load_mode[data_name])
 train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_size,
-                                               shuffle=True, num_workers=4)
+                                               shuffle=True, num_workers=8)
 test_dataset = RGBPreTrainDataloader(test_path, eval_mask_path,
                                      transform=test_transform, concat=concat_flag,
-                                     data_name=data_name)
+                                     data_name=data_name, load_mode=load_mode[data_name])
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, 
                                               shuffle=False, num_workers=8)
 
