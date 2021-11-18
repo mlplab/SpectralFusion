@@ -86,7 +86,7 @@ test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffl
 
 
 model = RefineUNet(31, 31).to(device)
-reconst_model = UNet(1, 31)
+reconst_model = UNet(input_ch, 31)
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{reconst_name}.tar'))
 reconst_model.load_state_dict(ckpt['model_state_dict'])
 reconst_model.to(device)

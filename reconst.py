@@ -83,8 +83,7 @@ train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=batch_s
 test_dataset = PatchMaskDataset(test_path, eval_mask_path, transform=test_transform, concat=concat_flag)
 test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4)
 
-
-Gmodel = UNet(1, 31).to(device)
+Gmodel = UNet(input_ch, 31).to(device)
 Dmodel = Discriminator(31, 64, 64).to(device)
 
 
