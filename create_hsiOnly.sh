@@ -16,7 +16,7 @@ done
 concats=('False' 'True')
 conv_mode="edsr"
 edsr_modes=("ghost")
-loss_modes=("mse" "mse_sam" "spectral")
+loss_modes=("mse" "mse_sam")
 start_time=$(date "+%m%d")
 # start_time='1028'
 # start_time='0919'

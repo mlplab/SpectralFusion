@@ -21,5 +21,6 @@ done
 
 zsh create_Lambda.sh -s $start_time -e $train_epoch
 zsh creat_SOTA.sh -s $start_time -e $train_epoch
+zsh creat_mySOTA.sh -s $start_time -e $train_epoch
 zsh create_rgb_fusion.sh -s $start_time -e $train_epoch
 zsh create_hsiOnly.sh -s $start_time -e $train_epoch
