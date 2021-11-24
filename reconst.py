@@ -96,8 +96,6 @@ Dparam = list(Dmodel.parameters())
 Doptim = torch.optim.Adam(lr=1e-3, params=Dparam)
 
 
-ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
-                          mkdir=True, partience=1, varbose=True)
 trainer = GANTrainer(Gmodel, Dmodel, Gcriterion, Dcriterion, Goptim, Doptim,
                      # callbacks=[ckpt_cb], 
                      device=device, use_amp=True,

@@ -98,10 +98,8 @@ param = list(model.parameters())
 optim = torch.optim.Adam(lr=1e-3, params=param)
 scheduler = torch.optim.lr_scheduler.StepLR(optim, 25, .5)
 
-ckpt_cb = ModelCheckPoint(ckpt_path, save_model_name,
-                          mkdir=True, partience=1, varbose=True)
 trainer = RefineTrainer(model, criterion, optim, reconst_model,
-                        callbacks=[ckpt_cb], scheduler=scheduler, 
+                        scheduler=scheduler, 
                         device=device, use_amp=True,
                         psnr=PSNRMetrics(), ssim=SSIM(), sam=SAMMetrics())
 train_loss, val_loss = trainer.train(epochs, train_dataloader, test_dataloader)
