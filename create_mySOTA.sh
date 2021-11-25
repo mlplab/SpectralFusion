@@ -10,10 +10,10 @@ train_epoch=150
 datasets=("CAVE" "Harvard")
 model_names=("Attention" "HyperMix")
 # model_names=("Attention" "HyperMix")
-block_nums=(9)
-# for i in {}; do
-#     block_nums+=($i)
-# done
+# block_nums=(9)
+for i in {1..13}; do
+    block_nums+=($i)
+done
 concats=('False' 'True')
 loss_modes=("mse" "mse_sam")
 chuncks=()
