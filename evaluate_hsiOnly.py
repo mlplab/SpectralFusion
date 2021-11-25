@@ -75,10 +75,6 @@ edsr_mode = args.edsr_mode
 save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{dt_now}_{concat_flag}_{conv_mode}_{edsr_mode}'
 
 
-model_names = os.listdir(sota_path)
-model_names = [name.split('.')[0] for name in model_names]
-
-
 output_path = os.path.join('../SCI_result/', f'{data_name}_{dt_now}', save_model_name)
 output_img_path = os.path.join(output_path, 'output_img')
 output_mat_path = os.path.join(output_path, 'output_mat')
@@ -97,7 +93,6 @@ test_dataset = PatchEvalDataset(test_path, mask_path, transform=None,
                                 concat=concat_flag, data_name=data_name)
 model = HSIHSCNN(input_ch=input_ch, output_ch=31,
                  feature_num=31, layer_num=block_num, hsi_mode=conv_mode, edsr_mode=edsr_mode).to(device)
- 
 
 
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),

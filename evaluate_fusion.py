@@ -79,10 +79,6 @@ input_rgb, output_rgb = mode[output_mode][3:]
 save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{output_mode}_{dt_now}_{concat_flag}_{conv_mode}'
 
 
-model_names = os.listdir(sota_path)
-model_names = [name.split('.')[0] for name in model_names]
-
-
 output_path = os.path.join('../SCI_result/', f'{data_name}_{dt_now}', save_model_name)
 output_img_path = os.path.join(output_path, 'output_img')
 output_mat_path = os.path.join(output_path, 'output_mat')
