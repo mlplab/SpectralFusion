@@ -20,7 +20,7 @@ done
 
 
 zsh create_Lambda.sh -s $start_time -e $train_epoch
-# zsh create_SOTA.sh -s $start_time -e $train_epoch
+zsh create_SOTA.sh -s $start_time -e $train_epoch
 zsh create_mySOTA.sh -s $start_time -e $train_epoch
 zsh create_rgb_fusion.sh -s $start_time -e $train_epoch
 zsh create_hsiOnly.sh -s $start_time -e $train_epoch
