@@ -10,15 +10,16 @@ train_epoch=150
 datasets=("ICVL")
 base_model_name="SpectralFusionRGBEncoder"
 rgb_model_name="RGBEncoder"
-block_nums=(8)
-# for i in {1..13}; do
-#     block_nums+=($i)
-# done
+# block_nums=(8)
+block_nums=()
+for i in {5..9..2}; do
+    block_nums+=($i)
+done
 concats=('False' 'True')
 modes=("inputOnly")
 conv_mode="edsr"
 edsr_modes=("ghost")
-loss_modes=("mse" "mse_sam")
+loss_modes=("mse")
 # start_time='1028'
 start_time=$(date "+%m%d")
 # start_time='0915'
