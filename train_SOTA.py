@@ -55,7 +55,7 @@ chunck = args.chunck
 ratio = args.ratio
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
-             'ICVL': 'h5'}
+             'ICVL': 'mat'}
 
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
