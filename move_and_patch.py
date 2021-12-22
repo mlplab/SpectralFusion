@@ -45,7 +45,7 @@ eval_mask_path = os.path.join(save_path, 'eval_mask_data')
 mask_show_path = os.path.join(save_path, 'mask_show_data')
 
 
-data_key = {'CAVE': 'im', 'Harvard': 'ref', 'ICVL': 'rad'}
+data_key = {'CAVE': 'im', 'Harvard': 'ref', 'ICVL': 'data'}
 data_size = {'CAVE': (512, 512, 31), 'Harvard': (1040, 1392, 31), 'ICVL': (1392, 1300, 31)}
 seed_key = {'CAVE': 1, 'Harvard': 2, 'ICVL': 3}
 np.random.seed(seed_key[data_name])
@@ -73,7 +73,7 @@ train_test_idx = {'CAVE': np.array([1] * 20 + [2] * 12),
                   'ICVL': np.random.choice((1, 2), data_list.shape[0], p=(.8, .2))}
 load_mode = {'CAVE': 'mat',
              'Harvard': 'mat',
-             'ICVL': 'h5'}
+             'ICVL': 'mat'}
 train_list = list(data_list[train_test_idx[data_name] == 1])
 test_list = list(data_list[train_test_idx[data_name] == 2])
 print(len(train_list), len(test_list))
