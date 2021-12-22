@@ -7,13 +7,13 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("CAVE" "Harvard")
+datasets=("ICVL")
 base_model_name="SpectralFusionRGBEncoder"
 rgb_model_name="RGBEncoder"
-block_nums=()
-for i in {1..13}; do
-    block_nums+=($i)
-done
+block_nums=(8)
+# for i in {1..13}; do
+#     block_nums+=($i)
+# done
 concats=('False' 'True')
 modes=("inputOnly")
 conv_mode="edsr"

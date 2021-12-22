@@ -7,10 +7,10 @@ CMDNAME=`basename $0`
 batch_size=64
 # search_epoch=100
 train_epoch=150
-datasets=("CAVE" "Harvard")
+datasets=("ICVL")
 base_model_name="SSAttention"
 block_nums=()
-for i in {1..13}; do
+for i in {5..9..2}; do
     block_nums+=($i)
 done
 concats=('False')
