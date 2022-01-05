@@ -9,10 +9,10 @@ batch_size=64
 train_epoch=150
 datasets=("ICVL")
 base_model_name="HSIHSCNN"
-block_nums=()
-for i in {5..9..2}; do
-    block_nums+=($i)
-done
+block_nums=(6 8)
+# for i in {5..9..2}; do
+#     block_nums+=($i)
+# done
 concats=('False' 'True')
 conv_mode="edsr"
 edsr_modes=("ghost")

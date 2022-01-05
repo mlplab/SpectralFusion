@@ -8,12 +8,13 @@ batch_size=64
 # search_epoch=100
 train_epoch=150
 datasets=("ICVL")
-model_names=("Attention" "HyperMix")
 # model_names=("Attention" "HyperMix")
-block_nums=()
-for i in {5..9..2}; do
-    block_nums+=($i)
-done
+model_names=("Attention")
+# model_names=("Attention" "HyperMix")
+block_nums=(9)
+# for i in {5..9..2}; do
+#     block_nums+=($i)
+# done
 concats=('False' 'True')
 loss_modes=("mse" "mse_sam")
 chuncks=()
