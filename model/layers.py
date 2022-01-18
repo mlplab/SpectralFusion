@@ -228,6 +228,15 @@ class My_Attention(Base_Module):
         output = attn_output * x
         return output
 
+    def get_map(self, x: torch.Tensor):
+
+        batch_size, ch, h, w = x.size()
+        spatial_attn = self.spatial_attn(x)
+        spectral_pooling = self.spectral_pooling(x).view(-1, ch)
+        spectral_linear = torch.relu(self.spectral_Linear(spectral_pooling))
+        spectral_attn = self.spectral_attn(spectral_linear).unsqueeze(-1).unsqueeze(-1)
+        return spatial_attn, [spatial_attn, spectral_attn]
+
 
 class Attention_HSI_Block(Base_Module):
 
@@ -250,6 +259,17 @@ class Attention_HSI_Block(Base_Module):
         x = attn_h + x
         x = self.spectral_conv(x)
         return x
+
+    def get_attention_map(self, x: torch.Tensor, spatial_flag: bool=True):
+        h = self.spatial_conv1(x)
+        h = self.activation(h)
+        h = self.spatial_conv2(h)
+        attn_h, attn_map = self.attention_block.get_map(h)
+        x = attn_h + x
+        x = self.spectral_conv(x)
+        if spatial_flag:
+            return x, attn_map, h
+        return x, attn_map
 
 
 class Global_Average_Pooling2d(torch.nn.Module):
