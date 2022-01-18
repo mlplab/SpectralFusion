@@ -107,8 +107,10 @@ class SSAttention(Base_Module):
             plot_feature = torchvision.utils.make_grid(plot_feature, nrow=row, padding=0).detach().cpu().numpy().copy()
             plot_feature = plot_feature[0] * .299 + plot_feature[1] * .587 + plot_feature[2] * .114
             # img = plt.imshow(plot_feature, cmap='jet')
+            plt.figure(figsize=(16, 9))
             plt.imsave(os.path.join(save_dir, 'spatial_map', f'{layer_name}_map.png'), plot_feature, cmap='jet')
             plt.clf()
+            plt.figure(figsize=(16, 9))
             plt.imshow(plot_feature, cmap='jet')
             plt.axis('off')
             plt.colorbar()
