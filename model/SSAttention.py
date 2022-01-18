@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import torch
 import torchvision
 from torchinfo import summary
-from layers import Base_Module, Attention_HSI_Block
+from .layers import Base_Module, Attention_HSI_Block
 
 sns.set()
 
@@ -104,7 +104,7 @@ class SSAttention(Base_Module):
         print('spatial')
         for layer_name, feature in spatial_map.items():
             plot_feature = normalize(feature.permute(1, 0, 2, 3))
-            plot_feature = torchvision.utils.make_grid(plot_feature, nrow=row, padding=0).detach().numpy()  # .cpu()
+            plot_feature = torchvision.utils.make_grid(plot_feature, nrow=row, padding=0).detach().cpu().numpy().copy()
             plot_feature = plot_feature[0] * .299 + plot_feature[1] * .587 + plot_feature[2] * .114
             # img = plt.imshow(plot_feature, cmap='jet')
             plt.imsave(os.path.join(save_dir, 'spatial_map', f'{layer_name}_map.png'), plot_feature, cmap='jet')
@@ -118,14 +118,14 @@ class SSAttention(Base_Module):
         for idx, (layer_name, feature) in enumerate(spectral_map.items()):
             # No. 0 (bar graph)
             spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().numpy().copy()
+            plot_feature = spectral.detach().cpu().numpy().copy()
             plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
             plt.savefig(os.path.join(save_dir, 'spectral_map0', f'{layer_name}_map.png'), bbox_inches='tight')
             plt.clf()
             # No. 1 (matrix graph)
             spectral = feature.squeeze(-1).squeeze(-1)
             spectral = spectral * spectral.T
-            plot_feature = spectral.detach().numpy().copy()
+            plot_feature = spectral.detach().cpu().numpy().copy()
             plt.imshow(plot_feature, cmap='jet')
             plt.colorbar()
             plt.savefig(os.path.join(save_dir, 'spectral_map1', f'{layer_name}_map.png'), bbox_inches='tight')
@@ -137,7 +137,7 @@ class SSAttention(Base_Module):
             plt.plot(all_psnr, marker='o', label='PSNR')
             ax2 = ax1.twinx()
             spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().numpy().copy()
+            plot_feature = spectral.detach().cpu().numpy().copy()
             plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
             h1, l1 = ax1.get_legend_handles_labels()
             h2, l2 = ax2.get_legend_handles_labels()
@@ -154,7 +154,7 @@ class SSAttention(Base_Module):
             plt.plot(all_sam, marker='o', label='SAM')
             ax2 = ax1.twinx()
             spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().numpy().copy()
+            plot_feature = spectral.detach().cpu().numpy().copy()
             plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
             h1, l1 = ax1.get_legend_handles_labels()
             h2, l2 = ax2.get_legend_handles_labels()
