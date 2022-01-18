@@ -136,11 +136,11 @@ class SSAttention(Base_Module):
             all_psnr = [psnr(spatial_map[f'Spatial_{idx}'][:, jdx], y[:, jdx]).item() for jdx in range(y.shape[1])]
             fig = plt.figure(figsize=(16, 9))
             ax1 = fig.add_subplot(111)
-            plt.plot(all_psnr, marker='o', label='PSNR')
-            ax2 = ax1.twinx()
             spectral = feature.squeeze(-1).squeeze(-1).squeeze()
             plot_feature = spectral.detach().cpu().numpy().copy()
             plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
+            ax2 = ax1.twinx()
+            plt.plot(all_psnr, 'C1', marker='o', label='PSNR')
             h1, l1 = ax1.get_legend_handles_labels()
             h2, l2 = ax2.get_legend_handles_labels()
             ax1.legend(h1+h2, l1+l2)
