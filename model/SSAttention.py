@@ -86,7 +86,7 @@ class SSAttention(Base_Module):
             res_x = res_layer(x)
             x = x_in + attn_x + res_x
         x = self.output_conv(x)
-        return spatial_map, spectral_map, spatial_feature
+        return x, spatial_map, spectral_map, spatial_feature
 
     def plot_attention_map(self, x: torch.Tensor, y: torch.Tensor, save_dir: str='Attention',
                            spatial_map: bool=True, *args, **kwargs):
@@ -94,75 +94,35 @@ class SSAttention(Base_Module):
         mat_mode = kwargs.get('mat_mode', False)
         row, col = int(np.ceil(np.sqrt(self.output_ch))), int(np.ceil(np.sqrt(self.output_ch)))
         os.makedirs(save_dir, exist_ok=True)
-        spatial_map , spectral_map, spatial_feature = self.get_attention_map(x)
+        output, spatial_map , spectral_map, spatial_feature = self.get_attention_map(x)
         os.makedirs(os.path.join(save_dir, 'spatial_map'), exist_ok=True)
         os.makedirs(os.path.join(save_dir, 'spatial_colorbar_map'), exist_ok=True)
-        os.makedirs(os.path.join(save_dir, 'spectral_map0'), exist_ok=True)
-        os.makedirs(os.path.join(save_dir, 'spectral_map1'), exist_ok=True)
-        os.makedirs(os.path.join(save_dir, 'spectral_map2'), exist_ok=True)
-        os.makedirs(os.path.join(save_dir, 'spectral_map3'), exist_ok=True)
+        os.makedirs(os.path.join(save_dir, 'spectral_map'), exist_ok=True)
+
         print('spatial')
-        for layer_name, feature in spatial_map.items():
-            plot_feature = normalize(feature.permute(1, 0, 2, 3))
-            plot_feature = torchvision.utils.make_grid(plot_feature, nrow=row, padding=0).detach().cpu().numpy().copy()
-            plot_feature = plot_feature[0] * .299 + plot_feature[1] * .587 + plot_feature[2] * .114
+        for (layer_name, layer), (spatial_layer_name, spatial_layer) in zip(spatial_map.items(), spatial_feature.items()):
             # img = plt.imshow(plot_feature, cmap='jet')
-            plt.figure(figsize=(16, 9))
+            diff = normalize((layer - spatial_layer).abs()).permute(1, 0, 2, 3)
+            plot_feature = torchvision.utils.make_grid(diff, nrow=row, padding=0).detach().cpu().numpy().copy()
+            plot_feature = plot_feature[0] * .299 + plot_feature[1] * .587 + plot_feature[2] * .114
             plt.imsave(os.path.join(save_dir, 'spatial_map', f'{layer_name}_map.png'), plot_feature, cmap='jet')
-            plt.clf()
-            plt.figure(figsize=(16, 9))
+            plt.figure(figsize=(8, 6))
             plt.imshow(plot_feature, cmap='jet')
             plt.axis('off')
             plt.colorbar()
             plt.savefig(os.path.join(save_dir, 'spatial_colorbar_map', f'{layer_name}_map.png'), bbox_inches='tight')
             plt.clf()
         print('spectral')
-        for idx, (layer_name, feature) in enumerate(spectral_map.items()):
-            # No. 0 (bar graph)
-            spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().cpu().numpy().copy()
-            plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
-            plt.savefig(os.path.join(save_dir, 'spectral_map0', f'{layer_name}_map.png'), bbox_inches='tight')
-            plt.clf()
-            # No. 1 (matrix graph)
-            spectral = feature.squeeze(-1).squeeze(-1)
-            spectral = spectral * spectral.T
-            plot_feature = spectral.detach().cpu().numpy().copy()
-            plt.imshow(plot_feature, cmap='jet')
-            plt.colorbar()
-            plt.savefig(os.path.join(save_dir, 'spectral_map1', f'{layer_name}_map.png'), bbox_inches='tight')
-            plt.clf()
-            # No. 2 (bar and psnr graph)
-            all_psnr = [psnr(spatial_map[f'Spatial_{idx}'][:, jdx], y[:, jdx]).item() for jdx in range(y.shape[1])]
-            fig = plt.figure(figsize=(16, 9))
-            ax1 = fig.add_subplot(111)
-            spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().cpu().numpy().copy()
-            plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
-            ax2 = ax1.twinx()
-            plt.plot(all_psnr, 'C1', marker='o', label='PSNR')
-            h1, l1 = ax1.get_legend_handles_labels()
-            h2, l2 = ax2.get_legend_handles_labels()
-            ax1.legend(h1+h2, l1+l2)
-            ax1.set_xlabel('spectral ch')
-            ax1.set_ylabel('Attention Map')
-            ax2.set_ylabel('PSNR Metrics')
-            plt.savefig(os.path.join(save_dir, 'spectral_map2', f'{layer_name}_map.png'), bbox_inches='tight')
-            plt.clf()
-            # No. 3 (bar and sam graph)
-            all_sam = [sam(spatial_map[f'Spatial_{idx}'][:, jdx], y[:, jdx]).item() for jdx in range(y.shape[1])]
-            fig = plt.figure(figsize=(16, 9))
-            ax1 = fig.add_subplot(111)
-            plt.plot(all_sam, marker='o', label='SAM')
-            ax2 = ax1.twinx()
-            spectral = feature.squeeze(-1).squeeze(-1).squeeze()
-            plot_feature = spectral.detach().cpu().numpy().copy()
-            plt.bar(np.arange(plot_feature.shape[0]), plot_feature)
-            h1, l1 = ax1.get_legend_handles_labels()
-            h2, l2 = ax2.get_legend_handles_labels()
-            ax1.legend(h1+h2, l1+l2)
-            ax1.set_xlabel('spectral ch')
-            ax1.set_ylabel('SAM Metrics')
-            ax2.set_ylabel('Attention Map')
-            plt.savefig(os.path.join(save_dir, 'spectral_map3', f'{layer_name}_map.png'), bbox_inches='tight')
-            plt.clf()
+        for (layer_name, layer), (spatial_layer_name, spatial_layer) in zip(spectral_map.items(), spatial_feature.items()):
+            plot_spatial_layer = normalize(spatial_layer).permute(1, 0, 2, 3)
+            plot_feature = torchvision.utils.make_grid(plot_spatial_layer, nrow=row, padding=0).detach().cpu().numpy().copy()
+            plot_feature = plot_feature[0] * .299 + plot_feature[1] * .587 + plot_feature[2] * .114
+            plt.imsave(os.path.join(save_dir, 'spectral_map', f'{spatial_layer_name}.png'), plot_feature, cmap='jet')
+            plot_spectral_score = np.ones((64, 64, 31))
+            spectral_map = normalize(layer).squeeze(0).detach().cpu().numpy().copy().transpose(1, 2, 0)
+            plot_spectral_score *= spectral_map
+            plot_spectral_score = torch.Tensor(np.expand_dims(plot_spectral_score.transpose(2, 0, 1), axis=1))
+            # plot_spectral_score = torch.ones_like(plot_spectral_score)
+            plot_spectral_score = torchvision.utils.make_grid(plot_spectral_score, nrow=row, padding=0).detach().cpu().numpy().copy()[0]
+            # print(plot_spectral_score[:, 0, 0], spectral_map[:, :, 0])
+            plt.imsave(os.path.join(save_dir, 'spectral_map', f'{layer_name}_map.png'), plot_spectral_score, cmap='jet')
