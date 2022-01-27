@@ -2,6 +2,7 @@
 
 
 import os
+import sys
 import h5py
 import pickle
 import shutil
@@ -286,10 +287,7 @@ class ModelCheckPoint(object):
         self.all_val_loss = []
         self.loss = []
         self.val_loss = []
-        if mkdir is True:
-            if os.path.exists(self.checkpoint_path):
-                shutil.rmtree(self.checkpoint_path)
-            os.makedirs(self.checkpoint_path)
+        os.makedirs(self.checkpoint_path, exist_ok=True)
         self.colab2drive_idx = 0
         if 'colab2drive' in kwargs.keys():
             self.colab2drive = kwargs['colab2drive']
@@ -305,6 +303,10 @@ class ModelCheckPoint(object):
             loss = kwargs['loss']
             val_loss = kwargs['val_loss']
         loss = loss[0]
+        print(type(loss))
+        if np.any(np.isnan(loss)):
+            print('isnan')
+            sys.exit(1)
         val_loss = val_loss[0]
         self.all_loss.append(loss)
         self.all_val_loss.append(val_loss)

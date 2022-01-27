@@ -83,8 +83,10 @@ model_obj = {'HSCNN': HSCNN, 'HyperReconNet': HyperReconNet, 'DeepSSPrior': Deep
 activations = {'HSCNN': 'leaky', 'HyperReconNet': 'relu', 'DeepSSPrior': 'relu', 'Attention': 'relu', 'HyperMix': 'relu'}
 
 
-# save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}_{chunck}'
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}_{chunck}'
+print(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'))
+print(os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')))
+# save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
 if os.path.exists(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar')):
     print(f'already trained {save_model_name}')
     sys.exit(0)
@@ -108,6 +110,8 @@ model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
 
 
 ckpt_callback_path = f'{ckpt_path}/{save_model_name}_callback'
+print(ckpt_callback_path)
+print(os.path.exists(ckpt_callback_path))
 if os.path.exists(ckpt_callback_path):
     callback_list = os.listdir(os.path.join(ckpt_callback_path, save_model_name))
     callback_list.sort(reverse=True)

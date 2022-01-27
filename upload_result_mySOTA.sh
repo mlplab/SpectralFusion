@@ -12,8 +12,8 @@ model_names=("Attention" "HyperMix")
 for i in {1..9}; do
     block_nums+=($i)
 done
-concats=('True')
-loss_mode="mse"
+concats=('True' 'False')
+loss_modes=("mse" "mse_sam")
 start_time=$(date "+%m%d")
 # start_time='0702'
 
@@ -37,20 +37,28 @@ done
 
 for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
-    skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
+    skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/mySOTA
+    echo "unk"
     for concat in $concats; do
+        echo "unk1"
         for block_num in $block_nums; do
-            for base_model_name in $model_names; do
-                echo $dataset $concat $loss_mode $model_name
+            echo "unk2"
+            for loss_mode in $loss_modes; do
+                echo "unk3"
+                for base_model_name in $model_names; do
+                    echo "unk4"
+                    echo $dataset $concat $loss_mode $model_name
 
-                name_block_num=$(printf %02d $block_num)
-                model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
-                upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat
-                mkdir -p ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload
-                cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name\_output.csv ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
-                cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar
-                skicka upload ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
-                rm -rf ../SCI/result/$dataset\_sota/$upload_model_name
+                    name_block_num=$(printf %02d $block_num)
+                    model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
+                    upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
+                    rm -rf ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
+                    mkdir -p ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload
+                    cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
+                    # cp ../SCI_result/$dataset\_sota/$model_name/$model_name\_upload/$model_name.tar ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/$upload_model_name.tar
+                    skicka upload ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/mySOTA/$model_name
+                    rm -rf ../SCI/result/$dataset\_sota/$upload_model_name
+                done
             done
         done
     done

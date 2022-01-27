@@ -19,8 +19,10 @@ do
 done
 
 
-zsh create_Lambda.sh -s $start_time -e $train_epoch
+# zsh create_Lambda.sh -s $start_time -e $train_epoch
 # zsh create_SOTA.sh -s $start_time -e $train_epoch
-zsh create_mySOTA.sh -s $start_time -e $train_epoch
-zsh create_rgb_fusion.sh -s $start_time -e $train_epoch
-zsh create_hsiOnly.sh -s $start_time -e $train_epoch
+# zsh create_rgb_fusion.sh -s '1125'
+# zsh create_hsiOnly.sh -s '1125'
+# zsh create_mix.sh -s '0117'
+zsh create_mySOTA.sh -s '0119'
+# zsh create_mix.sh -s '0117'

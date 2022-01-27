@@ -10,14 +10,15 @@ train_epoch=150
 datasets=("ICVL")
 # model_names=("Attention" "HyperMix")
 model_names=("Attention")
-# model_names=("Attention" "HyperMix")
-block_nums=(9)
-# for i in {5..9..2}; do
-#     block_nums+=($i)
-# done
-concats=('False' 'True')
-loss_modes=("mse" "mse_sam")
-chuncks=()
+# model_names=("HyperMix")
+# block_nums=(5 7 9)
+for i in {5..9..2}; do
+    block_nums+=($i)
+done
+concats=('False')
+loss_modes=('mse')
+# chuncks=(2 3 4)
+chunck=''
 start_time=$(date "+%m%d")
 # start_time='1115'
 # start_time=1009
@@ -41,6 +42,8 @@ do
 done
 
 
+end_status=1
+
 for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/mySOTA
@@ -48,21 +51,45 @@ for dataset in $datasets; do
         for block_num in $block_nums; do
             for loss_mode in $loss_modes; do
                 for base_model_name in $model_names; do
+                    # for chunck in $chuncks; do
+                    end_status=1
+                    end_count=0
 
                     name_block_num=$(printf %02d $block_num)
+                    # model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat\_$chunck
                     model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
+                    echo $model_name
 
-                    # if [ -d ../SCI_result/$dataset\_sota/$model_name ]; then
-                    python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
-                    python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
-                    # fi
+                    if [ ! -e ../SCI_result/$dataset\_$start_time/$model_name/output.csv ]; then
+                        while [ $end_status -eq 1 ]; do
+                            python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
+                            end_status=$?
+                            let end_count++
+                            echo $end_status $end_count
+                            if [ $end_count -eq 100000 ]; then
+                                break
+                            fi
+                        done
+                        if [ $end_count -eq 100000 ]; then
+                            callback_path=../SCI_ckpt/$dataset\_$start_time/$model_name\_callback/$model_name
+                            latest_file=`ls -lt ${callback_path}/*.tar | head -n 1 | gawk '{print $9}'`
+                            echo $latest_file
+                            if [ -e $latest_file ]; then
+                                cp $latest_file ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar
+                            else
+                                echo 'no callback path'
+                                exit 1
+                            fi
+                        fi
+                        python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
 
-                    upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
-                    mkdir -p ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload
-                    cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
-                    cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$upload_model_name\_upload/$upload_model_name.tar
-                    skicka upload ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/mySOTA/$model_name
-                    rm -rf ../SCI/result/$dataset\_$start_time/$upload_model_name
+                        upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
+                        mkdir -p ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload
+                        cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
+                        cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$upload_model_name\_upload/$upload_model_name.tar
+                        skicka upload ../SCI_result/$dataset\_$start_time/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/mySOTA/$model_name
+                        rm -rf ../SCI/result/$dataset\_$start_time/$upload_model_name
+                    fi
                 done
             done
         done

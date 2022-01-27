@@ -60,8 +60,8 @@ ratio = args.ratio
 
 device = 'cuda'
 
-# save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}_{chunck}'
-save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
+save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}_{chunck}'
+# save_model_name = f'{model_name}_{block_num:02d}_{loss_mode}_{concat_flag}'
 
 img_path = f'../SCI_dataset/My_{data_name}'
 test_path = os.path.join(img_path, 'eval_data')
@@ -94,6 +94,7 @@ model = model_obj[model_name](input_ch, 31, feature_num=31, block_num=block_num,
                               chunks=chunck, ratio=ratio)
 
 
+print(save_model_name)
 ckpt = torch.load(os.path.join(all_trained_ckpt_path, f'{save_model_name}.tar'),
                   map_location=torch.device('cpu'))
 model.load_state_dict(ckpt['model_state_dict'])

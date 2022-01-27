@@ -13,7 +13,7 @@ block_nums=(1 2 3 4 5 6 7 8 9 10 11 12 13)
 concats=('False' 'True')
 conv_mode='edsr'
 edsr_modes=('ghost')
-loss_mode="mse"
+loss_modes=("mse" "mse_sam")
 start_time=$(date "+%m%d")
 # start_time='0919'
 
@@ -40,15 +40,19 @@ for dataset in $datasets; do
     skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/HSIHSCNN
     for block_num in $block_nums; do
         for concat in $concats; do
+            for loss_mode in $loss_modes; do
             for edsr_mode in $edsr_modes; do
+            echo $dataset $concat $loss_mode $model_name
 
                 name_block_num=$(printf %02d $block_num)
                 model_name=$base_model_name\_$name_block_num\_$loss_mode\_$start_time\_$concat\_$conv_mode\_$edsr_mode
+                rm -rf ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 mkdir ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/$model_name\_output.csv
-                cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
+                # cp ../SCI_ckpt/$dataset\_$start_time/all_trained/$model_name.tar ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload
                 skicka upload ../SCI_result/$dataset\_$start_time/$model_name/$model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/HSIHSCNN/$model_name
             done
         done
+    done
     done
 done

@@ -11,11 +11,11 @@ datasets=("ICVL")
 base_model_name="SpectralFusionRGBEncoder"
 rgb_model_name="RGBEncoder"
 # block_nums=(8)
-block_nums=(6 8)
+block_nums=(3)
 # for i in {5..9..2}; do
 #     block_nums+=($i)
 # done
-concats=('False' 'True')
+concats=('False')
 modes=("inputOnly")
 conv_mode="edsr"
 edsr_modes=("ghost")

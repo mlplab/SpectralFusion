@@ -2,6 +2,7 @@
 
 
 import os
+import sys
 import time
 import numpy as np
 from tqdm import tqdm
@@ -146,6 +147,9 @@ class Trainer(object):
                 elif mode.lower() == 'val':
                     with torch.no_grad():
                         loss, output = self._step(inputs, labels, train=False)
+                if torch.any(torch.isnan(loss)):
+                    print('isnan')
+                    sys.exit(1)
                 step_loss.append(loss.item())
                 show_loss = np.mean(step_loss)
                 step_eval.append(self._evaluate(output, labels))
