@@ -5,22 +5,14 @@ CMDNAME=`basename $0`
 
 
 batch_size=64
-# search_epoch=100
 train_epoch=150
-datasets=("ICVL")
+datasets=("CAVE" "Harvard" "ICVL")
 model_names=("HSCNN" "HyperReconNet" "DeepSSPrior")
-# model_names=("Attention" "HyperMix")
 block_nums=(9)
-# for i in {9}; do
-#     block_nums+=($i)
-# done
 concats=('False' 'True')
 loss_modes=("mse" "mse_sam")
 chuncks=()
 start_time=$(date "+%m%d")
-# start_time='1115'
-# start_time=1009
-# start_time='0702'
 
 
 while getopts b:e:d:c:m:bn:s: OPT
@@ -41,28 +33,18 @@ done
 
 
 for dataset in $datasets; do
-    skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/
-    skicka mkdir 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA
     for concat in $concats; do
         for block_num in $block_nums; do
             for loss_mode in $loss_modes; do
                 for base_model_name in $model_names; do
-                    echo $base_model_name $loss_mode $block_num $concat $dataset
 
                     name_block_num=$(printf %02d $block_num)
                     model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
+                    echo $model_name
 
-                    # if [ -d ../SCI_result/$dataset\_sota/$model_name ]; then
                     python train_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
                     python evaluate_SOTA.py -e $train_epoch -d $dataset -l $loss_mode -st $start_time -bn $block_num -c $concat -b $batch_size -m $base_model_name
-                    # fi
 
-                    upload_model_name=$base_model_name\_$name_block_num\_$loss_mode\_$concat
-                    mkdir -p ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload
-                    cp ../SCI_result/$dataset\_$start_time/$model_name/output.csv ../SCI_result/$dataset\_sota/$model_name/$upload_model_name\_upload/$upload_model_name\_output.csv
-                    cp ../SCI_ckpt/$dataset\_$start_time/all_trained_sota/$model_name.tar ../SCI_result/$dataset\_sota/$model_name/$upload_model_name\_upload/$upload_model_name.tar
-                    skicka upload ../SCI_result/$dataset\_sota/$upload_model_name/$upload_model_name\_upload/ 2021/SpectralFusion/$dataset/ckpt_$start_time/SOTA/$model_name
-                    rm -rf ../SCI/result/$dataset\_$start_time/$upload_model_name
                 done
             done
         done
